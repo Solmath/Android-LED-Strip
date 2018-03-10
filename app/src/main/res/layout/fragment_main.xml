@@ -3,62 +3,136 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.jakebergmain.ledstrip.MainFragment">
+
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Red"
             android:id="@+id/textViewRed"
-            android:layout_gravity="left|top" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_gravity="left|top"
+            android:text="Red"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <SeekBar
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:id="@+id/seekBarRed"
-            android:layout_below="@+id/textViewRed"
-            android:layout_margin="20dp"
-            android:max="255"
-            android:layout_alignParentStart="true" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignBottom="@+id/textViewRed"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_toEndOf="@+id/textViewSaturation"
+            android:max="255" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Green"
             android:id="@+id/textViewGreen"
-            android:layout_below="@+id/seekBarRed"
-            android:layout_gravity="left|top" />
-
-        <SeekBar
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/seekBarGreen"
-            android:layout_below="@+id/textViewGreen"
-            android:layout_margin="20dp"
-            android:max="255"
-            android:layout_alignParentStart="true" />
-
-        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:text="Blue"
-            android:id="@+id/textViewBlue"
-            android:layout_below="@+id/seekBarGreen"
-            android:layout_gravity="left|top" />
+            android:layout_alignStart="@+id/textViewRed"
+            android:layout_below="@+id/textViewRed"
+            android:layout_gravity="left|top"
+            android:layout_marginTop="12dp"
+            android:text="Green"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <SeekBar
+            android:id="@+id/seekBarGreen"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/textViewGreen"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_toEndOf="@+id/textViewSaturation"
+            android:max="255" />
+
+        <TextView
+            android:id="@+id/textViewBlue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/textViewGreen"
+            android:layout_below="@+id/textViewGreen"
+            android:layout_gravity="left|top"
+            android:layout_marginTop="12dp"
+            android:text="Blue"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <SeekBar
             android:id="@+id/seekBarBlue"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/textViewBlue"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_toEndOf="@+id/textViewSaturation"
+            android:max="255" />
+
+        <TextView
+            android:id="@+id/textViewHue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/textViewBlue"
             android:layout_below="@+id/textViewBlue"
-            android:layout_margin="20dp"
+            android:layout_gravity="left|top"
+            android:layout_marginTop="50dp"
+            android:text="Hue"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <SeekBar
+            android:id="@+id/seekBarHue"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@+id/textViewHue"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:layout_toEndOf="@+id/textViewSaturation"
             android:max="255"
-            android:layout_alignParentStart="true" />
+            android:thumb="@drawable/hue_thumb"
+            android:splitTrack="false"/>
+
+        <TextView
+            android:id="@+id/textViewSaturation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/textViewHue"
+            android:layout_below="@+id/textViewHue"
+            android:layout_gravity="left|top"
+            android:layout_marginTop="12dp"
+            android:text="Saturation"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <SeekBar
+            android:id="@+id/seekBarSaturation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:max="255"
+            android:layout_alignBottom="@+id/textViewSaturation"
+            android:layout_toEndOf="@+id/textViewSaturation" />
+
+        <TextView
+            android:id="@+id/textViewBrightness"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignStart="@+id/textViewSaturation"
+            android:layout_below="@+id/textViewSaturation"
+            android:layout_gravity="left|top"
+            android:layout_marginTop="12dp"
+            android:text="Brightness"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <SeekBar
+            android:id="@+id/seekBarBrightness"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:max="255"
+            android:layout_alignBottom="@+id/textViewBrightness"
+            android:layout_toEndOf="@+id/textViewSaturation" />
 
 
     </RelativeLayout>

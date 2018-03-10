@@ -44,7 +44,7 @@ public class ChangeColorTask extends AsyncTask<Integer, Void, Integer> {
         int green = params[1];
         int blue = params[2];
 
-        // scale colors from max 255 to max 1023
+        /*// scale colors from max 255 to max 1023
         red = (int) ((red / 255.0) * 1023);
         green = (int) ((green / 255.0) * 1023);
         blue = (int) ((blue / 255.0) * 1023);
@@ -111,6 +111,8 @@ public class ChangeColorTask extends AsyncTask<Integer, Void, Integer> {
             }
         }
 
-        return FAILURE;
+        return FAILURE;*/
+
+        return SUCCESS;
     }
 }

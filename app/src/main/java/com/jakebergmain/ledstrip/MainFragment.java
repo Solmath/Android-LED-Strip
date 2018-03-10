@@ -1,8 +1,12 @@
 package com.jakebergmain.ledstrip;
 
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.LinearGradient;
+import android.graphics.Shader.TileMode;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.shapes.RectShape;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -10,11 +14,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.SeekBar;
-
-import java.util.List;
-
+import android.graphics.Color;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -30,7 +31,9 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
 
     private OnFragmentInteractionListener mListener;
 
-    SeekBar redBar, greenBar, blueBar;
+    SeekBar redBar, greenBar, blueBar, hueBar, saturationBar, brightnessBar;
+
+    int SeekBarChangedFlag = 0;
 
 
     public MainFragment() {
@@ -66,13 +69,43 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
+        rootView.measure(
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        rootView.layout(0, 0,
+                rootView.getMeasuredWidth(),
+                rootView.getMeasuredHeight());
+
         // seekbars
         redBar = (SeekBar) rootView.findViewById(R.id.seekBarRed);
         greenBar = (SeekBar) rootView.findViewById(R.id.seekBarGreen);
         blueBar = (SeekBar) rootView.findViewById(R.id.seekBarBlue);
+
         redBar.setOnSeekBarChangeListener(this);
         blueBar.setOnSeekBarChangeListener(this);
         greenBar.setOnSeekBarChangeListener(this);
+
+        hueBar = (SeekBar) rootView.findViewById(R.id.seekBarHue);
+        float width = (float)hueBar.getWidth();
+
+        LinearGradient HSVgradient = new LinearGradient(0.f, 0.f, width*10.f, 0.0f,
+
+                new int[] { 0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF,
+                        0xFF0000FF, 0xFFFF00FF, 0xFFFF0000},
+                null, TileMode.CLAMP);
+
+        ShapeDrawable gradientRect = new ShapeDrawable(new RectShape());
+        gradientRect.getPaint().setShader(HSVgradient);
+
+        hueBar.setProgressDrawable( (Drawable)gradientRect );
+        saturationBar = (SeekBar) rootView.findViewById(R.id.seekBarSaturation);
+        brightnessBar = (SeekBar) rootView.findViewById(R.id.seekBarBrightness);
+
+        HSBSeekbarListener HSB = new HSBSeekbarListener();
+
+        hueBar.setOnSeekBarChangeListener(HSB);
+        saturationBar.setOnSeekBarChangeListener(HSB);
+        brightnessBar.setOnSeekBarChangeListener(HSB);
 
         // test
         searchForDevices();
@@ -109,6 +142,40 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
     // methods for seek bar listener
 
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
+        // hsv-bars should be changed as well, but if change in rgb-bars is caused by a change
+        // of the hsv-bars we get an infinite loop
+        // maybe use flag that is set in the first onProgressChanged method and reset by the
+        // other one
+
+        if (SeekBarChangedFlag == 1)
+        {
+            //rgb-bars have been changed by hsv-bars --> do not change hsv-bars
+            SeekBarChangedFlag = 0;
+        }
+        else
+        {
+            // rgb-bars have been changed by user --> change hsv-bars
+            int r = redBar.getProgress();
+            int g = greenBar.getProgress();
+            int b = blueBar.getProgress();
+
+            float[] hsv = new float[3];
+
+            Color.RGBToHSV(r, g, b, hsv);
+
+            int h = (int) (hsv[0] / 360.f * 255.f);
+            int s = (int) (hsv[1] * 255.f);
+            int v = (int) (hsv[2] * 255.f);
+
+            // Calculate RGB-Values from HSB-values and change RGB-seekbars
+            SeekBarChangedFlag = 1;
+            hueBar.setProgress(h);
+            SeekBarChangedFlag = 1;
+            saturationBar.setProgress(s);
+            SeekBarChangedFlag = 1;
+            brightnessBar.setProgress(v);
+        }
+
         // colors changed so send packet to led strip
         changeColor();
     }
@@ -170,5 +237,53 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
     public interface OnFragmentInteractionListener {
         // TODO: Update argument type and name
         void onFragmentInteraction(Uri uri);
+    }
+
+    private class HSBSeekbarListener implements SeekBar.OnSeekBarChangeListener {
+        @Override
+        public void onProgressChanged(SeekBar seekBar, int progress,
+                                      boolean fromUser) {
+            if (SeekBarChangedFlag == 1)
+            {
+                //hsv-bars have been changed by rgb-bars --> do not change rgb-bars
+                SeekBarChangedFlag = 0;
+            }
+            else
+            {
+                // hsv-bars have been changed by user --> change rgb-bars
+                int r, g, b;
+
+                float h = (float) hueBar.getProgress();
+                float s = (float) saturationBar.getProgress();
+                float v = (float) brightnessBar.getProgress();
+
+                float[] hsv = new float[3];
+
+                // scale colors from 0 to 1
+                hsv[0] = (h / 255.f * 360.f);
+                hsv[1] = (s / 255.f);
+                hsv[2] = (v / 255.f);
+
+                int rgb = Color.HSVToColor(hsv);
+
+                r = Color.red(rgb);
+                g = Color.green(rgb);
+                b = Color.blue(rgb);
+
+                // Calculate RGB-Values from HSB-values and change RGB-seekbars
+                SeekBarChangedFlag = 1;
+                redBar.setProgress(r);
+                SeekBarChangedFlag = 1;
+                greenBar.setProgress(g);
+                SeekBarChangedFlag = 1;
+                blueBar.setProgress(b);
+            }
+        }
+
+        @Override
+        public void onStartTrackingTouch(SeekBar seekBar) {}
+
+        @Override
+        public void onStopTrackingTouch(SeekBar seekBar) {}
     }
 }
