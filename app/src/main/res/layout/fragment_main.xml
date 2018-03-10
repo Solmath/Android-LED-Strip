@@ -1,140 +1,159 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.jakebergmain.ledstrip.MainFragment">
 
-    <RelativeLayout
+    <android.support.constraint.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:id="@+id/relativeLayout">
 
         <TextView
             android:id="@+id/textViewRed"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentTop="true"
             android:layout_gravity="left|top"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
             android:text="Red"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <SeekBar
             android:id="@+id/seekBarRed"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignBottom="@+id/textViewRed"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_toEndOf="@+id/textViewBrightness"
-            android:max="255" />
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:max="255"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewRed"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textViewBrightness"
+            app:layout_constraintTop_toTopOf="@+id/textViewRed" />
 
         <TextView
             android:id="@+id/textViewGreen"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/textViewRed"
-            android:layout_below="@+id/textViewRed"
             android:layout_gravity="left|top"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:text="Green"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            app:layout_constraintStart_toStartOf="@+id/textViewRed"
+            app:layout_constraintTop_toBottomOf="@+id/textViewRed" />
 
         <SeekBar
             android:id="@+id/seekBarGreen"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/textViewGreen"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_toEndOf="@+id/textViewBrightness"
-            android:max="255" />
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:max="255"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewGreen"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textViewBrightness"
+            app:layout_constraintTop_toTopOf="@+id/textViewGreen" />
 
         <TextView
             android:id="@+id/textViewBlue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/textViewGreen"
-            android:layout_below="@+id/textViewGreen"
             android:layout_gravity="left|top"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:text="Blue"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            app:layout_constraintStart_toStartOf="@+id/textViewRed"
+            app:layout_constraintTop_toBottomOf="@+id/textViewGreen" />
 
         <SeekBar
             android:id="@+id/seekBarBlue"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/textViewBlue"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_toEndOf="@+id/textViewBrightness"
-            android:max="255" />
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:max="255"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewBlue"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textViewBrightness"
+            app:layout_constraintTop_toTopOf="@+id/textViewBlue" />
 
         <TextView
             android:id="@+id/textViewHue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/textViewBlue"
-            android:layout_below="@+id/textViewBlue"
             android:layout_gravity="left|top"
-            android:layout_marginTop="50dp"
+            android:layout_marginTop="64dp"
             android:text="Hue"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            app:layout_constraintStart_toStartOf="@+id/textViewRed"
+            app:layout_constraintTop_toBottomOf="@+id/textViewBlue" />
 
         <SeekBar
             android:id="@+id/seekBarHue"
-            android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/textViewHue"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_toEndOf="@+id/textViewBrightness"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
             android:max="255"
+            android:paddingBottom="5dp"
+            android:paddingTop="5dp"
+            android:splitTrack="false"
             android:thumb="@drawable/hue_thumb"
-            android:splitTrack="false"/>
+            app:layout_constraintBottom_toBottomOf="@+id/textViewHue"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textViewBrightness"
+            app:layout_constraintTop_toTopOf="@+id/textViewHue" />
 
         <TextView
             android:id="@+id/textViewSaturation"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/textViewHue"
-            android:layout_below="@+id/textViewHue"
             android:layout_gravity="left|top"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:text="Saturation"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            app:layout_constraintStart_toStartOf="@+id/textViewRed"
+            app:layout_constraintTop_toBottomOf="@+id/textViewHue" />
 
         <SeekBar
             android:id="@+id/seekBarSaturation"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignBottom="@+id/textViewSaturation"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
-            android:layout_toEndOf="@+id/textViewBrightness"
-            android:max="255" />
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            android:max="255"
+            app:layout_constraintBottom_toBottomOf="@+id/textViewSaturation"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textViewBrightness"
+            app:layout_constraintTop_toTopOf="@+id/textViewSaturation" />
 
         <TextView
             android:id="@+id/textViewBrightness"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignStart="@+id/textViewSaturation"
-            android:layout_below="@+id/textViewSaturation"
             android:layout_gravity="left|top"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:text="Brightness"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            app:layout_constraintStart_toStartOf="@+id/textViewRed"
+            app:layout_constraintTop_toBottomOf="@+id/textViewSaturation" />
 
         <SeekBar
             android:id="@+id/seekBarBrightness"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
             android:max="255"
-            android:layout_alignBottom="@+id/textViewBrightness"
-            android:layout_toEndOf="@+id/textViewBrightness" />
+            app:layout_constraintBottom_toBottomOf="@+id/textViewBrightness"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/textViewBrightness"
+            app:layout_constraintTop_toTopOf="@+id/textViewBrightness" />
 
 
-    </RelativeLayout>
+    </android.support.constraint.ConstraintLayout>
 
 </FrameLayout>

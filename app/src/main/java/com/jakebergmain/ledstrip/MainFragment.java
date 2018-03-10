@@ -1,5 +1,6 @@
 package com.jakebergmain.ledstrip;
 
+import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.LinearGradient;
@@ -9,7 +10,6 @@ import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +34,8 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
     SeekBar redBar, greenBar, blueBar, hueBar, saturationBar, brightnessBar;
 
     int SeekBarChangedFlag = 0;
+
+    static boolean deviceDetectionRun = false;
 
 
     public MainFragment() {
@@ -86,18 +88,27 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
         greenBar.setOnSeekBarChangeListener(this);
 
         hueBar = (SeekBar) rootView.findViewById(R.id.seekBarHue);
-        float width = (float)hueBar.getWidth();
 
-        LinearGradient HSVgradient = new LinearGradient(0.f, 0.f, width*10.f, 0.0f,
+        hueBar.post(new Runnable() {
+            @Override
+            public void run() {
+                //width is ready
+                float hueBarWidth = (float) hueBar.getWidth();
+                float hueBarPadding = (float) (hueBar.getPaddingStart() + hueBar.getPaddingEnd());
 
-                new int[] { 0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF,
-                        0xFF0000FF, 0xFFFF00FF, 0xFFFF0000},
-                null, TileMode.CLAMP);
+                LinearGradient HSVgradient = new LinearGradient(0.f, 0.f, hueBarWidth - 2 * hueBarPadding, 0.f,
 
-        ShapeDrawable gradientRect = new ShapeDrawable(new RectShape());
-        gradientRect.getPaint().setShader(HSVgradient);
+                        new int[]{0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF,
+                                0xFF0000FF, 0xFFFF00FF, 0xFFFF0000},
+                        null, TileMode.MIRROR);
 
-        hueBar.setProgressDrawable( (Drawable)gradientRect );
+                ShapeDrawable gradientRect = new ShapeDrawable(new RectShape());
+                gradientRect.getPaint().setShader(HSVgradient);
+
+                hueBar.setProgressDrawable((Drawable) gradientRect);
+            }
+        });
+
         saturationBar = (SeekBar) rootView.findViewById(R.id.seekBarSaturation);
         brightnessBar = (SeekBar) rootView.findViewById(R.id.seekBarBrightness);
 
@@ -107,8 +118,10 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
         saturationBar.setOnSeekBarChangeListener(HSB);
         brightnessBar.setOnSeekBarChangeListener(HSB);
 
-        // test
-        searchForDevices();
+        if (!deviceDetectionRun) {
+            searchForDevices();
+            deviceDetectionRun = true;
+        }
 
         return rootView;
     }
@@ -138,22 +151,18 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
     }
 
 
-
     // methods for seek bar listener
 
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser){
+    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
         // hsv-bars should be changed as well, but if change in rgb-bars is caused by a change
         // of the hsv-bars we get an infinite loop
         // maybe use flag that is set in the first onProgressChanged method and reset by the
         // other one
 
-        if (SeekBarChangedFlag == 1)
-        {
+        if (SeekBarChangedFlag == 1) {
             //rgb-bars have been changed by hsv-bars --> do not change hsv-bars
             SeekBarChangedFlag = 0;
-        }
-        else
-        {
+        } else {
             // rgb-bars have been changed by user --> change hsv-bars
             int r = redBar.getProgress();
             int g = greenBar.getProgress();
@@ -180,20 +189,19 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
         changeColor();
     }
 
-    public void onStartTrackingTouch(SeekBar seekBar){
+    public void onStartTrackingTouch(SeekBar seekBar) {
 
     }
 
-    public void onStopTrackingTouch(SeekBar seekBar){
+    public void onStopTrackingTouch(SeekBar seekBar) {
 
     }
-
 
 
     /**
      * method for Discover task callback
      */
-    public void onFoundDevice(){
+    public void onFoundDevice() {
         // we found a LED strip!
         // what do we do now?
 
@@ -207,7 +215,7 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
     /**
      * Start DiscoverTask to search for devices on local network.
      */
-    public void searchForDevices(){
+    public void searchForDevices() {
         Log.v(LOG_TAG, "starting DiscoverTask");
         new DiscoverTask(getContext(), this).execute(null, null);
     }
@@ -216,7 +224,7 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
      * Gets color data from seekbars and starts ChangeColorTask
      * to send a packet and change the color of the LEDs
      */
-    public void changeColor(){
+    public void changeColor() {
         int r = redBar.getProgress();
         int g = greenBar.getProgress();
         int b = blueBar.getProgress();
@@ -243,13 +251,10 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress,
                                       boolean fromUser) {
-            if (SeekBarChangedFlag == 1)
-            {
+            if (SeekBarChangedFlag == 1) {
                 //hsv-bars have been changed by rgb-bars --> do not change rgb-bars
                 SeekBarChangedFlag = 0;
-            }
-            else
-            {
+            } else {
                 // hsv-bars have been changed by user --> change rgb-bars
                 int r, g, b;
 
@@ -281,9 +286,11 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
         }
 
         @Override
-        public void onStartTrackingTouch(SeekBar seekBar) {}
+        public void onStartTrackingTouch(SeekBar seekBar) {
+        }
 
         @Override
-        public void onStopTrackingTouch(SeekBar seekBar) {}
+        public void onStopTrackingTouch(SeekBar seekBar) {
+        }
     }
 }

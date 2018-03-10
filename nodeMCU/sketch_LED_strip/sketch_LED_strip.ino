@@ -25,7 +25,6 @@ void setup()
   pinMode(REDPIN, OUTPUT);
   pinMode(GREENPIN, OUTPUT);
   pinMode(BLUEPIN, OUTPUT);
-  // pinMode(ledPin, OUTPUT);
 
   digitalWrite(REDPIN, HIGH);
   delay(300);
