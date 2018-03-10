@@ -96,7 +96,7 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
                 float hueBarWidth = (float) hueBar.getWidth();
                 float hueBarPadding = (float) (hueBar.getPaddingStart() + hueBar.getPaddingEnd());
 
-                LinearGradient HSVgradient = new LinearGradient(0.f, 0.f, hueBarWidth - 2 * hueBarPadding, 0.f,
+                LinearGradient HSVgradient = new LinearGradient(0.f, 0.f, hueBarWidth - hueBarPadding, 0.f,
 
                         new int[]{0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF,
                                 0xFF0000FF, 0xFFFF00FF, 0xFFFF0000},
