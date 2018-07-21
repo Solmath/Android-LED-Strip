@@ -152,18 +152,16 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
 
 
     // methods for seek bar listener
-
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        // hsv-bars should be changed as well, but if change in rgb-bars is caused by a change
-        // of the hsv-bars we get an infinite loop
-        // maybe use flag that is set in the first onProgressChanged method and reset by the
-        // other one
+        // When the value of a seekbar changes, first check if the SeekBarChangedFlag was set by
+        // a change of the other group of seekbars.
+        // If the flag is set do not change the other bars again.
 
         if (SeekBarChangedFlag == 1) {
-            //rgb-bars have been changed by hsv-bars --> do not change hsv-bars
+            //RGB-bars have been changed by HSB-bars --> do not change HSB-bars
             SeekBarChangedFlag = 0;
         } else {
-            // rgb-bars have been changed by user --> change hsv-bars
+            // RGB-bars have been changed by user --> change HSB-bars
             int r = redBar.getProgress();
             int g = greenBar.getProgress();
             int b = blueBar.getProgress();
@@ -196,7 +194,6 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
     public void onStopTrackingTouch(SeekBar seekBar) {
 
     }
-
 
     /**
      * method for Discover task callback
@@ -247,15 +244,21 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
         void onFragmentInteraction(Uri uri);
     }
 
+    /**
+     * Seperate listener for HSB-bars, with its own definition of the onProgressChanged method.
+     */
     private class HSBSeekbarListener implements SeekBar.OnSeekBarChangeListener {
         @Override
-        public void onProgressChanged(SeekBar seekBar, int progress,
-                                      boolean fromUser) {
+        public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+            // When the value of a seekbar changes, first check if the SeekBarChangedFlag was set by
+            // a change of the other group of seekbars.
+            // If the flag is set do not change the other bars again.
+
             if (SeekBarChangedFlag == 1) {
-                //hsv-bars have been changed by rgb-bars --> do not change rgb-bars
+                //HSB-bars have been changed by RGB-bars --> do not change RGB-bars
                 SeekBarChangedFlag = 0;
             } else {
-                // hsv-bars have been changed by user --> change rgb-bars
+                // HSB-bars have been changed by user --> change RGB-bars
                 int r, g, b;
 
                 float h = (float) hueBar.getProgress();
