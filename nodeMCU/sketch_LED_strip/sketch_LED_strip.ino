@@ -5,9 +5,6 @@
 #include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 
-// const char* ssid      = "ssid";
-// const char* password  = "password";
-
 unsigned int port = 2390;
 
 char packetBuffer[255];
@@ -36,25 +33,16 @@ void setup()
   delay(300);
   digitalWrite(BLUEPIN, LOW);
 
-
   // begin serial and connect to WiFi
   Serial.begin(115200);
   delay(100);
 
-  Serial.println();
-  Serial.println();
-  Serial.print("Connecting to wifi");
-  // Serial.println(ssid);
-
-  // WiFi.begin(ssid, password);
-
+  Serial.println("");
+  Serial.println("Connecting to wifi");
+  Serial.println("");
+  
   WiFiManager wifiManager;
   wifiManager.autoConnect();
-
-  // while (WiFi.status() != WL_CONNECTED) {
-  //   delay(500);
-  //   Serial.print(".");
-  // }
 
   Serial.println("");
   Serial.println("WiFi connected");
@@ -62,12 +50,7 @@ void setup()
   Serial.println(WiFi.localIP());
 
   Udp.begin(port);
-
 }
-
-
-
-int value = 0;
 
 void loop()
 {
@@ -131,8 +114,5 @@ void loop()
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
     Udp.write(ReplyBuffer);
     Udp.endPacket();
-
   }
-
-
 }
