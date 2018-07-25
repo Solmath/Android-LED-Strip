@@ -37,10 +37,6 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
 
     static boolean deviceDetectionRun = false;
 
-    ShapeDrawable satRect = new ShapeDrawable(new RectShape());
-    ShapeDrawable brightRect = new ShapeDrawable(new RectShape());
-
-
     public MainFragment() {
         // Required empty public constructor
     }
@@ -99,14 +95,14 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
             float hueBarWidth = (float) hueBar.getWidth();
             float hueBarPadding = (float) (hueBar.getPaddingStart() + hueBar.getPaddingEnd());
 
-            LinearGradient HSVgradient = new LinearGradient(0.f, 0.f, hueBarWidth - hueBarPadding, 0.f,
+            LinearGradient gradient = new LinearGradient(0.f, 0.f, hueBarWidth - hueBarPadding, 0.f,
 
                     new int[]{0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF,
                             0xFF0000FF, 0xFFFF00FF, 0xFFFF0000},
                     null, TileMode.MIRROR);
 
             ShapeDrawable gradientRect = new ShapeDrawable(new RectShape());
-            gradientRect.getPaint().setShader(HSVgradient);
+            gradientRect.getPaint().setShader(gradient);
 
             hueBar.setProgressDrawable(gradientRect);
             }
@@ -121,14 +117,14 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
                 float saturationBarWidth = (float) saturationBar.getWidth();
                 float saturationBarPadding = (float) (saturationBar.getPaddingStart() + saturationBar.getPaddingEnd());
 
-                LinearGradient satGradient = new LinearGradient(0.f, 0.f, saturationBarWidth - saturationBarPadding, 0.f,
+                LinearGradient gradient = new LinearGradient(0.f, 0.f, saturationBarWidth - saturationBarPadding, 0.f,
 
                         new int[]{0xFF000000, 0xFF000000},
                         null, TileMode.MIRROR);
 
-
-                satRect.getPaint().setShader(satGradient);
-                saturationBar.setProgressDrawable(satRect);
+                ShapeDrawable gradientRect = new ShapeDrawable(new RectShape());
+                gradientRect.getPaint().setShader(gradient);
+                saturationBar.setProgressDrawable(gradientRect);
             }
         });
 
@@ -141,14 +137,15 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
                 float brightnessBarWidth = (float) brightnessBar.getWidth();
                 float brightnessBarPadding = (float) (brightnessBar.getPaddingStart() + brightnessBar.getPaddingEnd());
 
-                LinearGradient brightGradient = new LinearGradient(0.f, 0.f, brightnessBarWidth - brightnessBarPadding, 0.f,
+                LinearGradient gradient = new LinearGradient(0.f, 0.f, brightnessBarWidth - brightnessBarPadding, 0.f,
 
-                        new int[]{0xFF000000, 0xFF000000},
+                        new int[]{0xFF000000, 0xFFFFFFFF},
                         null, TileMode.MIRROR);
 
 
-                brightRect.getPaint().setShader(brightGradient);
-                brightnessBar.setProgressDrawable(brightRect);
+                ShapeDrawable gradientRect = new ShapeDrawable(new RectShape());
+                gradientRect.getPaint().setShader(gradient);
+                brightnessBar.setProgressDrawable(gradientRect);
             }
         });
 
@@ -217,7 +214,6 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
             saturationBar.setProgress(s);
             brightnessBar.setProgress(0); // workaround to ensure gradient is updated
             brightnessBar.setProgress(v);
-
         }
 
         // colors changed so send packet to led strip
@@ -299,26 +295,6 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
             hsv[1] = (s / 255.f);
             hsv[2] = (v / 255.f);
 
-            if (fromUser){
-                saturationBar.setProgress(0); // workaround to ensure gradient is updated
-                saturationBar.setProgress((int)s);
-                brightnessBar.setProgress(0); // workaround to ensure gradient is updated
-                brightnessBar.setProgress((int)v);
-                // HSB-bars have been changed by user --> change RGB-bars
-                int r, g, b;
-
-                int rgb = Color.HSVToColor(hsv);
-
-                r = Color.red(rgb);
-                g = Color.green(rgb);
-                b = Color.blue(rgb);
-
-                // Calculate RGB-Values from HSB-values and change RGB-seekbars
-                redBar.setProgress(r);
-                greenBar.setProgress(g);
-                blueBar.setProgress(b);
-            }
-
             // saturationBar.setHueAndBrightness(h, v);
             // Rect bounds = saturationBar.getProgressDrawable().getBounds(); // can be used for LinearGradient instead of width and padding?
             float saturationBarWidth = (float) saturationBar.getWidth();
@@ -335,8 +311,9 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
                     ColorStart, ColorEnd,
                     TileMode.MIRROR);
 
-            satRect.getPaint().setShader(satGradient);
-            saturationBar.setProgressDrawable(satRect);
+            ShapeDrawable satGradientRect = new ShapeDrawable(new RectShape());
+            satGradientRect.getPaint().setShader(satGradient);
+            saturationBar.setProgressDrawable(satGradientRect);
             // saturationBar.getProgressDrawable().setBounds(bounds);
 
             // brightnessBar.setHueAndSaturation(h, s);
@@ -356,8 +333,31 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
                     ColorStart, ColorEnd,
                     TileMode.MIRROR);
 
-            brightRect.getPaint().setShader(brightGradient);
-            brightnessBar.setProgressDrawable(brightRect);
+            ShapeDrawable brightGradientRect = new ShapeDrawable(new RectShape());
+            brightGradientRect.getPaint().setShader(brightGradient);
+            brightnessBar.setProgressDrawable(brightGradientRect);
+
+            if (fromUser){
+                // HSB-bars have been changed by user --> change RGB-bars
+                int r, g, b;
+
+                int rgb = Color.HSVToColor(hsv);
+
+                r = Color.red(rgb);
+                g = Color.green(rgb);
+                b = Color.blue(rgb);
+
+                // Calculate RGB-Values from HSB-values and change RGB-seekbars
+                redBar.setProgress(r);
+                greenBar.setProgress(g);
+                blueBar.setProgress(b);
+
+                // workaround to ensure gradient is updated
+                saturationBar.setProgress(0);
+                saturationBar.setProgress((int)s);
+                brightnessBar.setProgress(0);
+                brightnessBar.setProgress((int)v);
+            }
         }
 
         @Override
