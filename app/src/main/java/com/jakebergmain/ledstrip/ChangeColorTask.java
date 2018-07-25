@@ -1,34 +1,29 @@
 package com.jakebergmain.ledstrip;
 
-import android.app.ProgressDialog;
-import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import java.net.ConnectException;
+import java.lang.ref.WeakReference;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
-import java.net.UnknownHostException;
 
 /**
  * Created by jake on 2/7/16.
  */
 public class ChangeColorTask extends AsyncTask<Integer, Void, Integer> {
 
-    final static int SUCCESS = 0;
-    final static int FAILURE = 1;
+    private final static int SUCCESS = 0;
+    private final static int FAILURE = 1;
 
-    final int PORT = 2390;
-    final int RESPONSE_PORT = 55056;
+    private final String LOG_TAG = ChangeColorTask.class.getSimpleName();
 
-    final String LOG_TAG = ChangeColorTask.class.getSimpleName();
+    private WeakReference<SharedPreferences> mPrefs;
 
-    Context mContext;
-
-    public ChangeColorTask(Context context){
-        mContext = context;
+    ChangeColorTask(SharedPreferences prefs){
+        this.mPrefs = new WeakReference<>(prefs);
     }
 
     public void onPostExecute(Integer result) {
@@ -44,6 +39,14 @@ public class ChangeColorTask extends AsyncTask<Integer, Void, Integer> {
         int green = params[1];
         int blue = params[2];
 
+        final int PORT = 2390;
+        final int RESPONSE_PORT = 55056;
+
+        SharedPreferences prefs = mPrefs.get();
+
+        if (prefs == null)
+            return FAILURE;
+
         // scale colors from max 255 to max 1023
         red = (int) ((red / 255.0) * 1023);
         green = (int) ((green / 255.0) * 1023);
@@ -55,15 +58,14 @@ public class ChangeColorTask extends AsyncTask<Integer, Void, Integer> {
 
         InetAddress address;
         try {
-            String ipAddrString = mContext.getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)
-                    .getString(Constants.PREFERENCES_IP_ADDR, "");
+            String ipAddrString = prefs.getString(Constants.PREFERENCES_IP_ADDR, "");
             // remove slash at the beginning
             ipAddrString = ipAddrString.substring(1);
             address = InetAddress.getByName(ipAddrString);
         } catch (Exception e) {
             Log.w(LOG_TAG, "No valid IP in SharedPreferences");
             e.printStackTrace();
-            return null;
+            return FAILURE;
         }
 
         // packet as a string
@@ -75,29 +77,31 @@ public class ChangeColorTask extends AsyncTask<Integer, Void, Integer> {
             // packet contents
             byte[] bytes = packetContents.getBytes();
             // send a packet with above contents to specified ip and port
-            Log.v(LOG_TAG, "sending packet to " + address.toString());
-            DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, PORT);
-            socket.send(packet);
+            if (address != null) {
+                Log.v(LOG_TAG, "sending packet to " + address.toString());
+                DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, PORT);
+                socket.send(packet);
 
-            // listen for a response
-            byte[] response = new byte[1024];
-            DatagramPacket responsePacket = new DatagramPacket(response, response.length);
-            socket.setSoTimeout(1000);
+                // listen for a response
+                byte[] response = new byte[1024];
+                DatagramPacket responsePacket = new DatagramPacket(response, response.length);
+                socket.setSoTimeout(1000);
 
-            String text = "";
-            try {
-                Log.v(LOG_TAG, "Listening for a response");
-                socket.receive(responsePacket);
-                text = new String(response, 0, responsePacket.getLength());
-                Log.v(LOG_TAG, "Received packet.  contents: " + text);
-            } catch (SocketTimeoutException e) {
-                Log.w(LOG_TAG, "Socket timed out");
+                String text;
+                try {
+                    Log.v(LOG_TAG, "Listening for a response");
+                    socket.receive(responsePacket);
+                    text = new String(response, 0, responsePacket.getLength());
+                    Log.v(LOG_TAG, "Received packet.  contents: " + text);
+                } catch (SocketTimeoutException e) {
+                    Log.w(LOG_TAG, "Socket timed out");
 
-                return FAILURE;
-            }
+                    return FAILURE;
+                }
 
-            if(text.equals("acknowledged")) {
-                return SUCCESS;
+                if (text.equals("acknowledged")) {
+                    return SUCCESS;
+                }
             }
 
         } catch (Exception e) {

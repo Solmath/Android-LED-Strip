@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.LinearGradient;
 import android.graphics.Shader.TileMode;
-import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.graphics.drawable.shapes.RectShape;
 import android.net.Uri;
@@ -32,8 +31,6 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
     private OnFragmentInteractionListener mListener;
 
     SeekBar redBar, greenBar, blueBar, hueBar, saturationBar, brightnessBar;
-
-    int SeekBarChangedFlag = 0;
 
     static boolean deviceDetectionRun = false;
 
@@ -79,15 +76,15 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
                 rootView.getMeasuredHeight());
 
         // seekbars
-        redBar = (SeekBar) rootView.findViewById(R.id.seekBarRed);
-        greenBar = (SeekBar) rootView.findViewById(R.id.seekBarGreen);
-        blueBar = (SeekBar) rootView.findViewById(R.id.seekBarBlue);
+        redBar = rootView.findViewById(R.id.seekBarRed);
+        greenBar = rootView.findViewById(R.id.seekBarGreen);
+        blueBar = rootView.findViewById(R.id.seekBarBlue);
 
         redBar.setOnSeekBarChangeListener(this);
         blueBar.setOnSeekBarChangeListener(this);
         greenBar.setOnSeekBarChangeListener(this);
 
-        hueBar = (SeekBar) rootView.findViewById(R.id.seekBarHue);
+        hueBar = rootView.findViewById(R.id.seekBarHue);
 
         hueBar.post(new Runnable() {
             @Override
@@ -105,12 +102,12 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
                 ShapeDrawable gradientRect = new ShapeDrawable(new RectShape());
                 gradientRect.getPaint().setShader(HSVgradient);
 
-                hueBar.setProgressDrawable((Drawable) gradientRect);
+                hueBar.setProgressDrawable(gradientRect);
             }
         });
 
-        saturationBar = (SeekBar) rootView.findViewById(R.id.seekBarSaturation);
-        brightnessBar = (SeekBar) rootView.findViewById(R.id.seekBarBrightness);
+        saturationBar = rootView.findViewById(R.id.seekBarSaturation);
+        brightnessBar = rootView.findViewById(R.id.seekBarBrightness);
 
         HSBSeekbarListener HSB = new HSBSeekbarListener();
 
@@ -157,10 +154,7 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
         // a change of the other group of seekbars.
         // If the flag is set do not change the other bars again.
 
-        if (SeekBarChangedFlag == 1) {
-            //RGB-bars have been changed by HSB-bars --> do not change HSB-bars
-            SeekBarChangedFlag = 0;
-        } else {
+        if (fromUser) {
             // RGB-bars have been changed by user --> change HSB-bars
             int r = redBar.getProgress();
             int g = greenBar.getProgress();
@@ -175,11 +169,8 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
             int v = (int) (hsv[2] * 255.f);
 
             // Calculate RGB-Values from HSB-values and change RGB-seekbars
-            SeekBarChangedFlag = 1;
             hueBar.setProgress(h);
-            SeekBarChangedFlag = 1;
             saturationBar.setProgress(s);
-            SeekBarChangedFlag = 1;
             brightnessBar.setProgress(v);
         }
 
@@ -225,7 +216,7 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
         int r = redBar.getProgress();
         int g = greenBar.getProgress();
         int b = blueBar.getProgress();
-        new ChangeColorTask(getContext()).execute(r, g, b);
+        new ChangeColorTask(getContext().getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)).execute(r, g, b);
     }
 
 
@@ -250,14 +241,8 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
     private class HSBSeekbarListener implements SeekBar.OnSeekBarChangeListener {
         @Override
         public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-            // When the value of a seekbar changes, first check if the SeekBarChangedFlag was set by
-            // a change of the other group of seekbars.
-            // If the flag is set do not change the other bars again.
 
-            if (SeekBarChangedFlag == 1) {
-                //HSB-bars have been changed by RGB-bars --> do not change RGB-bars
-                SeekBarChangedFlag = 0;
-            } else {
+            if (fromUser){
                 // HSB-bars have been changed by user --> change RGB-bars
                 int r, g, b;
 
@@ -279,11 +264,8 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
                 b = Color.blue(rgb);
 
                 // Calculate RGB-Values from HSB-values and change RGB-seekbars
-                SeekBarChangedFlag = 1;
                 redBar.setProgress(r);
-                SeekBarChangedFlag = 1;
                 greenBar.setProgress(g);
-                SeekBarChangedFlag = 1;
                 blueBar.setProgress(b);
             }
         }

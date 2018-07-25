@@ -12,26 +12,31 @@ char ReplyBuffer[] = "acknowledged";
 
 WiFiUDP Udp;
 
-const int REDPIN = 12;
-const int GREENPIN = 16;
-const int BLUEPIN = 13;
+const int LED_RED = D5;
+const int LED_GREEN = D6;
+const int LED_BLUE = D7;
+
+const int LED_BUILTIN_2 = D4;
 
 void setup()
 {
   // set pin modes
-  pinMode(REDPIN, OUTPUT);
-  pinMode(GREENPIN, OUTPUT);
-  pinMode(BLUEPIN, OUTPUT);
+  pinMode(LED_RED, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+  pinMode(LED_BLUE, OUTPUT);
 
-  digitalWrite(REDPIN, HIGH);
+  pinMode(LED_BUILTIN, OUTPUT);
+  pinMode(LED_BUILTIN_2, OUTPUT);
+
+  digitalWrite(LED_RED, HIGH);
   delay(300);
-  digitalWrite(REDPIN, LOW);
-  digitalWrite(GREENPIN, HIGH);
+  digitalWrite(LED_RED, LOW);
+  digitalWrite(LED_GREEN, HIGH);
   delay(300);
-  digitalWrite(GREENPIN, LOW);
-  digitalWrite(BLUEPIN, HIGH);
+  digitalWrite(LED_GREEN, LOW);
+  digitalWrite(LED_BLUE, HIGH);
   delay(300);
-  digitalWrite(BLUEPIN, LOW);
+  digitalWrite(LED_BLUE, LOW);
 
   // begin serial and connect to WiFi
   Serial.begin(115200);
@@ -48,6 +53,7 @@ void setup()
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+  Serial.println("");
 
   Udp.begin(port);
 }
@@ -55,6 +61,8 @@ void setup()
 void loop()
 {
   int packetSize = Udp.parsePacket();
+  char buf[100];
+  
   if(packetSize) {
     Serial.print("Received packet of size ");
     Serial.println(packetSize);
@@ -68,46 +76,44 @@ void loop()
     int len = Udp.read(packetBuffer, 255);
     if (len > 0) {
       packetBuffer[len] = 0;
-    }    
+    }
+    
     Serial.println("Contents:");
     Serial.println(packetBuffer);
-    Serial.write(packetBuffer);
-    Serial.println();
+    Serial.println("");
 
     // TEMP parse data from packet
     char * temp;
-    Serial.print("Splitting string \"");
-    Serial.print(packetBuffer);
-    Serial.println("\"");
 
     int r = 0;
     int b = 0;
     int g = 0;
 
     temp = strtok (packetBuffer,":");
-    Serial.println(temp);
     r = atoi(temp);
 
     if(temp != NULL){
       temp = strtok (NULL,":");
-      Serial.println(temp);
       g = atoi(temp);
     }
 
     if(temp != NULL){
       temp = strtok (NULL,":");
-      Serial.println(temp);
       b = atoi(temp);
     }
 
-    Serial.println();
-    Serial.println(r);
-    Serial.println(g);
-    Serial.println(b);
+    sprintf(buf,"r = %4d\ng = %4d\nb = %4d",r, g, b);
 
-    analogWrite(REDPIN, r);
-    analogWrite(GREENPIN, g);
-    analogWrite(BLUEPIN, b);
+    Serial.println(buf);
+    Serial.println("");
+
+    analogWrite(LED_RED, r);
+    analogWrite(LED_GREEN, g);
+    analogWrite(LED_BLUE, b);
+
+    // debugging with onboard LEDs
+    analogWrite(LED_BUILTIN, 1023-b);
+    analogWrite(LED_BUILTIN_2, 1023-g);
 
     // send a reply, to the IP address and port
     // that sent us the packet we received
