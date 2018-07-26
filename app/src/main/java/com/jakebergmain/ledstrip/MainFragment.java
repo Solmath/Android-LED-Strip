@@ -190,9 +190,6 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
 
     // methods for seek bar listener
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        // When the value of a seekbar changes, first check if the SeekBarChangedFlag was set by
-        // a change of the other group of seekbars.
-        // If the flag is set do not change the other bars again.
 
         if (fromUser) {
             // RGB-bars have been changed by user --> change HSB-bars
@@ -295,16 +292,19 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
             hsv[1] = (s / 255.f);
             hsv[2] = (v / 255.f);
 
+            float[] hsvTemp = new float[3];
+            System.arraycopy( hsv, 0, hsvTemp, 0, hsv.length );
+
             // saturationBar.setHueAndBrightness(h, v);
             // Rect bounds = saturationBar.getProgressDrawable().getBounds(); // can be used for LinearGradient instead of width and padding?
             float saturationBarWidth = (float) saturationBar.getWidth();
             float saturationBarPadding = (float) (saturationBar.getPaddingStart() + saturationBar.getPaddingEnd());
 
             // gradient from (h, 0, v) to (h, 255, v)
-            hsv[1] = 0.f;
-            int ColorStart = Color.HSVToColor(hsv);
-            hsv[1] = 1.f;
-            int ColorEnd = Color.HSVToColor(hsv);
+            hsvTemp[1] = 0.f;
+            int ColorStart = Color.HSVToColor(hsvTemp);
+            hsvTemp[1] = 1.f;
+            int ColorEnd = Color.HSVToColor(hsvTemp);
 
             LinearGradient satGradient = new LinearGradient(0.f, 0.f, saturationBarWidth - saturationBarPadding, 0.f,
 
@@ -322,11 +322,11 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
             float brightnessBarPadding = (float) (brightnessBar.getPaddingStart() + brightnessBar.getPaddingEnd());
 
             // gradient from (h, s, 0) to (h, s, 255)
-            hsv[1] = (s / 255.f);
-            hsv[2] = 0.f;
-            ColorStart = Color.HSVToColor(hsv);
-            hsv[2] = 1.f;
-            ColorEnd = Color.HSVToColor(hsv);
+            hsvTemp[1] = hsv[1];
+            hsvTemp[2] = 0.f;
+            ColorStart = Color.HSVToColor(hsvTemp);
+            hsvTemp[2] = 1.f;
+            ColorEnd = Color.HSVToColor(hsvTemp);
 
             LinearGradient brightGradient = new LinearGradient(0.f, 0.f, brightnessBarWidth - brightnessBarPadding, 0.f,
 
