@@ -91,7 +91,7 @@
             app:layout_constraintStart_toStartOf="@+id/textViewRed"
             app:layout_constraintTop_toBottomOf="@+id/textViewBlue" />
 
-        <SeekBar
+        <view class="com.jakebergmain.ledstrip.HSBSeekBar"
             android:id="@+id/seekBarHue"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -118,7 +118,7 @@
             app:layout_constraintStart_toStartOf="@+id/textViewRed"
             app:layout_constraintTop_toBottomOf="@+id/textViewHue" />
 
-        <SeekBar
+        <view class="com.jakebergmain.ledstrip.HSBSeekBar"
             android:id="@+id/seekBarSaturation"
             android:layout_width="0dp"
             android:layout_height="0dp"
@@ -145,7 +145,7 @@
             app:layout_constraintStart_toStartOf="@+id/textViewRed"
             app:layout_constraintTop_toBottomOf="@+id/textViewSaturation" />
 
-        <SeekBar
+        <view class="com.jakebergmain.ledstrip.HSBSeekBar"
             android:id="@+id/seekBarBrightness"
             android:layout_width="0dp"
             android:layout_height="0dp"
