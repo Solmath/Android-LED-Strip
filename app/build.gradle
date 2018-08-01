@@ -24,4 +24,5 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     testImplementation 'junit:junit:4.12'
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
+    implementation 'com.larswerkman:HoloColorPicker:1.5'
 }

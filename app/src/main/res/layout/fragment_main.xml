@@ -6,161 +6,51 @@
     tools:context="com.jakebergmain.ledstrip.MainFragment">
 
     <android.support.constraint.ConstraintLayout
+        android:id="@+id/relativeLayout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/relativeLayout">
+        android:layout_height="match_parent">
 
-        <TextView
-            android:id="@+id/textViewRed"
+        <com.larswerkman.holocolorpicker.ColorPicker
+            android:id="@+id/picker"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="left|top"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:text="Red"
-            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:layout_gravity="center"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            app:color_wheel_thickness="25dp"
+            app:color_pointer_radius="20dp"
+            app:color_pointer_halo_radius="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <com.larswerkman.holocolorpicker.SaturationBar
+            android:id="@+id/saturationbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginEnd="8dp"
+            android:layout_marginStart="8dp"
+            app:bar_thickness="5dp"
+            app:bar_pointer_radius="5dp"
+            app:bar_pointer_halo_radius="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/picker" />
 
-        <SeekBar
-            android:id="@+id/seekBarRed"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:max="255"
-            app:layout_constraintBottom_toBottomOf="@+id/textViewRed"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/textViewBrightness"
-            app:layout_constraintTop_toTopOf="@+id/textViewRed" />
-
-        <TextView
-            android:id="@+id/textViewGreen"
+        <com.larswerkman.holocolorpicker.ValueBar
+            android:id="@+id/valuebar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="left|top"
-            android:layout_marginTop="8dp"
-            android:text="Green"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            app:layout_constraintStart_toStartOf="@+id/textViewRed"
-            app:layout_constraintTop_toBottomOf="@+id/textViewRed" />
-
-        <SeekBar
-            android:id="@+id/seekBarGreen"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
+            android:layout_gravity="center"
             android:layout_marginEnd="8dp"
             android:layout_marginStart="8dp"
-            android:max="255"
-            app:layout_constraintBottom_toBottomOf="@+id/textViewGreen"
+            android:layout_marginTop="20dp"
+            app:bar_thickness="5dp"
+            app:bar_pointer_radius="5dp"
+            app:bar_pointer_halo_radius="10dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/textViewBrightness"
-            app:layout_constraintTop_toTopOf="@+id/textViewGreen" />
-
-        <TextView
-            android:id="@+id/textViewBlue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="left|top"
-            android:layout_marginTop="8dp"
-            android:text="Blue"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            app:layout_constraintStart_toStartOf="@+id/textViewRed"
-            app:layout_constraintTop_toBottomOf="@+id/textViewGreen" />
-
-        <SeekBar
-            android:id="@+id/seekBarBlue"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:max="255"
-            app:layout_constraintBottom_toBottomOf="@+id/textViewBlue"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/textViewBrightness"
-            app:layout_constraintTop_toTopOf="@+id/textViewBlue" />
-
-        <TextView
-            android:id="@+id/textViewHue"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="left|top"
-            android:layout_marginTop="64dp"
-            android:text="Hue"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            app:layout_constraintStart_toStartOf="@+id/textViewRed"
-            app:layout_constraintTop_toBottomOf="@+id/textViewBlue" />
-
-        <view class="com.jakebergmain.ledstrip.HSBSeekBar"
-            android:id="@+id/seekBarHue"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:max="255"
-            android:paddingBottom="5dp"
-            android:paddingTop="5dp"
-            android:splitTrack="false"
-            android:thumb="@drawable/hue_thumb"
-            app:layout_constraintBottom_toBottomOf="@+id/textViewHue"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/textViewBrightness"
-            app:layout_constraintTop_toTopOf="@+id/textViewHue" />
-
-        <TextView
-            android:id="@+id/textViewSaturation"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="left|top"
-            android:layout_marginTop="8dp"
-            android:text="Saturation"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            app:layout_constraintStart_toStartOf="@+id/textViewRed"
-            app:layout_constraintTop_toBottomOf="@+id/textViewHue" />
-
-        <view class="com.jakebergmain.ledstrip.HSBSeekBar"
-            android:id="@+id/seekBarSaturation"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:max="255"
-            android:paddingBottom="5dp"
-            android:paddingTop="5dp"
-            android:splitTrack="false"
-            android:thumb="@drawable/hue_thumb"
-            app:layout_constraintBottom_toBottomOf="@+id/textViewSaturation"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/textViewBrightness"
-            app:layout_constraintTop_toTopOf="@+id/textViewSaturation" />
-
-        <TextView
-            android:id="@+id/textViewBrightness"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="left|top"
-            android:layout_marginTop="8dp"
-            android:text="Brightness"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            app:layout_constraintStart_toStartOf="@+id/textViewRed"
-            app:layout_constraintTop_toBottomOf="@+id/textViewSaturation" />
-
-        <view class="com.jakebergmain.ledstrip.HSBSeekBar"
-            android:id="@+id/seekBarBrightness"
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginStart="8dp"
-            android:max="255"
-            android:paddingBottom="5dp"
-            android:paddingTop="5dp"
-            android:splitTrack="false"
-            android:thumb="@drawable/hue_thumb"
-            app:layout_constraintBottom_toBottomOf="@+id/textViewBrightness"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/textViewBrightness"
-            app:layout_constraintTop_toTopOf="@+id/textViewBrightness" />
-
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/saturationbar" />
 
     </android.support.constraint.ConstraintLayout>
 

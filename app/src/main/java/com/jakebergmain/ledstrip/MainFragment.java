@@ -3,14 +3,17 @@ package com.jakebergmain.ledstrip;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.SeekBar;
-import android.graphics.Color;
+
+import com.larswerkman.holocolorpicker.ColorPicker;
+import com.larswerkman.holocolorpicker.SaturationBar;
+import com.larswerkman.holocolorpicker.ValueBar;
 
 
 /**
@@ -21,14 +24,15 @@ import android.graphics.Color;
  * Use the {@link MainFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallback, SeekBar.OnSeekBarChangeListener {
+public class MainFragment extends Fragment implements ColorPicker.OnColorChangedListener, ColorPicker.OnColorSelectedListener, DiscoverTask.DiscoverCallback {
 
     final String LOG_TAG = MainFragment.class.getSimpleName();
 
     private OnFragmentInteractionListener mListener;
 
-    SeekBar redBar, greenBar, blueBar;
-    HSBSeekBar hueBar, saturationBar, brightnessBar;
+    ColorPicker picker;
+
+    int lastColor = 0;
 
     static boolean deviceDetectionRun = false;
 
@@ -61,81 +65,17 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_main, container, false);
 
-        rootView.measure(
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-        rootView.layout(0, 0,
-                rootView.getMeasuredWidth(),
-                rootView.getMeasuredHeight());
+        picker = rootView.findViewById(R.id.picker);
+        SaturationBar saturationBar = rootView.findViewById(R.id.saturationbar);
+        ValueBar valueBar = rootView.findViewById(R.id.valuebar);
 
-        // seekbars
-        redBar = rootView.findViewById(R.id.seekBarRed);
-        greenBar = rootView.findViewById(R.id.seekBarGreen);
-        blueBar = rootView.findViewById(R.id.seekBarBlue);
+        picker.addSaturationBar(saturationBar);
+        picker.addValueBar(valueBar);
 
-        redBar.setOnSeekBarChangeListener(this);
-        blueBar.setOnSeekBarChangeListener(this);
-        greenBar.setOnSeekBarChangeListener(this);
-
-        hueBar = rootView.findViewById(R.id.seekBarHue);
-        hueBar.setOnSeekBarChangeListener(hueBar);
-        hueBar.post(new Runnable() {
-            @Override
-            public void run() {
-                hueBar.setGradient(new int[]{0xFFFF0000, 0xFFFFFF00, 0xFF00FF00, 0xFF00FFFF,
-                        0xFF0000FF, 0xFFFF00FF, 0xFFFF0000});
-            }
-        });
-
-        saturationBar = rootView.findViewById(R.id.seekBarSaturation);
-        saturationBar.setOnSeekBarChangeListener(saturationBar);
-
-        brightnessBar = rootView.findViewById(R.id.seekBarBrightness);
-        brightnessBar.setOnSeekBarChangeListener(brightnessBar);
-
-        if (savedInstanceState != null) {
-
-            final float hue = (float) savedInstanceState.getInt("hue", 0);
-            final float saturation = (float) savedInstanceState.getInt("saturation", 0);
-            final float brightness = (float) savedInstanceState.getInt("brightness", 0);
-
-            saturationBar.post(new Runnable() {
-                @Override
-                public void run() {
-                    saturationBar.setGradient(saturationBar.getSaturationGradientBoundaries(hue, brightness));
-                }
-            });
-            brightnessBar.post(new Runnable() {
-                @Override
-                public void run() {
-                    brightnessBar.setGradient(brightnessBar.getBrightnessGradientBoundaries(hue, saturation));
-                }
-            });
-        } else {
-            saturationBar.post(new Runnable() {
-                @Override
-                public void run() {
-                    saturationBar.setGradient(new int[]{0xFF000000, 0xFF000000});
-                }
-            });
-
-            brightnessBar.post(new Runnable() {
-                @Override
-                public void run() {
-                    brightnessBar.setGradient(new int[]{0xFF000000, 0xFFFFFFFF});
-                }
-            });
-        }
-
-
-
-
-
-
-        // pass references to HSB seekbar objects
-        hueBar.initSeekBars();
-        saturationBar.initSeekBars();
-        brightnessBar.initSeekBars();
+        //to turn of showing the old color
+        picker.setShowOldCenterColor(false);
+        picker.setOnColorChangedListener(this);
+        picker.setOnColorSelectedListener(this);
 
         if (!deviceDetectionRun) {
             searchForDevices();
@@ -150,9 +90,7 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
         // Make sure to call the super method so that the states of our views are saved
         super.onSaveInstanceState(outState);
         // Save our own state now
-        outState.putInt("hue", hueBar.getProgress());
-        outState.putInt("saturation", saturationBar.getProgress());
-        outState.putInt("brightness", brightnessBar.getProgress());
+        // outState.putInt("hue", hueBar.getProgress());
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -179,41 +117,19 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
         mListener = null;
     }
 
-    // methods for seek bar listener
-    public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+    @Override
+    public void onColorChanged(int color) {
+        //gives the color when it's changed.
 
-        if (fromUser) {
-            // RGB-bars have been changed by user --> change HSB-bars
-            int r = redBar.getProgress();
-            int g = greenBar.getProgress();
-            int b = blueBar.getProgress();
-
-            float[] hsv = new float[3];
-
-            Color.RGBToHSV(r, g, b, hsv);
-
-            int h = (int) (hsv[0] / 360.f * 255.f);
-            int s = (int) (hsv[1] * 255.f);
-            int v = (int) (hsv[2] * 255.f);
-
-            // Calculate RGB-Values from HSB-values and change RGB-seekbars
-            hueBar.setProgress(h);
-            saturationBar.setProgress(0); // workaround to ensure gradient is updated
-            saturationBar.setProgress(s);
-            brightnessBar.setProgress(0); // workaround to ensure gradient is updated
-            brightnessBar.setProgress(v);
+        if (Math.abs(color - lastColor) > 10 || color == 0xFFFFFFFF || color == 0xFF000000){
+            changeColor();
+            lastColor = color;
         }
+    }
 
-        // colors changed so send packet to led strip
+    @Override
+    public void onColorSelected(int color){
         changeColor();
-    }
-
-    public void onStartTrackingTouch(SeekBar seekBar) {
-
-    }
-
-    public void onStopTrackingTouch(SeekBar seekBar) {
-
     }
 
     /**
@@ -242,9 +158,12 @@ public class MainFragment extends Fragment implements DiscoverTask.DiscoverCallb
      * to send a packet and change the color of the LEDs
      */
     public void changeColor() {
-        int r = redBar.getProgress();
-        int g = greenBar.getProgress();
-        int b = blueBar.getProgress();
+        int color = picker.getColor();
+
+        int r = Color.red(color);
+        int g = Color.green(color);
+        int b = Color.blue(color);
+
         new ChangeColorTask(getContext().getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)).execute(r, g, b);
     }
 
