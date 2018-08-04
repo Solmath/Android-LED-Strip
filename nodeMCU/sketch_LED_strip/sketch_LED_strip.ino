@@ -12,11 +12,11 @@ char ReplyBuffer[] = "acknowledged";
 
 WiFiUDP Udp;
 
-const int LED_RED = D5;
-const int LED_GREEN = D6;
+const int LED_RED = D6;
+const int LED_GREEN = D5;
 const int LED_BLUE = D7;
 
-const int LED_BUILTIN_2 = D4;
+// const int LED_BUILTIN_2 = D4;
 
 void setup()
 {
@@ -25,8 +25,8 @@ void setup()
   pinMode(LED_GREEN, OUTPUT);
   pinMode(LED_BLUE, OUTPUT);
 
-  pinMode(LED_BUILTIN, OUTPUT);
-  pinMode(LED_BUILTIN_2, OUTPUT);
+  // pinMode(LED_BUILTIN, OUTPUT);
+  // pinMode(LED_BUILTIN_2, OUTPUT);
 
   digitalWrite(LED_RED, HIGH);
   delay(300);
@@ -86,8 +86,8 @@ void loop()
     char * temp;
 
     int r = 0;
-    int b = 0;
     int g = 0;
+    int b = 0;
 
     temp = strtok (packetBuffer,":");
     r = atoi(temp);
@@ -112,8 +112,8 @@ void loop()
     analogWrite(LED_BLUE, b);
 
     // debugging with onboard LEDs
-    analogWrite(LED_BUILTIN, 1023-b);
-    analogWrite(LED_BUILTIN_2, 1023-g);
+    // analogWrite(LED_BUILTIN, 1023-b);
+    // analogWrite(LED_BUILTIN_2, 1023-g);
 
     // send a reply, to the IP address and port
     // that sent us the packet we received

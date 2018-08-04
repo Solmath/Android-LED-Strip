@@ -78,7 +78,7 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
         picker.setOnColorSelectedListener(this);
 
         if (!deviceDetectionRun) {
-            searchForDevices();
+            // searchForDevices();
             deviceDetectionRun = true;
         }
 
@@ -120,12 +120,12 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
     @Override
     public void onColorChanged(int color) {
         //gives the color when it's changed.
-        changeColor();
+        // changeColor();
     }
 
     @Override
     public void onColorSelected(int color){
-        changeColor();
+        // changeColor();
     }
 
     /**

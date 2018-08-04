@@ -22,7 +22,10 @@
             android:layout_marginTop="8dp"
             app:color_pointer_halo_radius="25dp"
             app:color_pointer_radius="20dp"
-            app:color_wheel_thickness="25dp"
+            app:color_wheel_radius="150dp"
+            app:color_wheel_thickness="10dp"
+            app:color_center_radius="54dp"
+            app:color_center_halo_radius="60dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.028"
@@ -32,36 +35,38 @@
         <com.larswerkman.holocolorpicker.SaturationBar
             android:id="@+id/saturationbar"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_gravity="center"
             android:layout_marginBottom="8dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginTop="4dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="8dp"
+            app:bar_length="300dp"
             app:bar_orientation_horizontal="false"
-            app:bar_pointer_halo_radius="25dp"
-            app:bar_pointer_radius="20dp"
-            app:bar_thickness="25dp"
+            app:bar_pointer_halo_radius="14dp"
+            app:bar_pointer_radius="6dp"
+            app:bar_thickness="4dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/picker"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.666" />
+            app:layout_constraintVertical_bias="0.0" />
 
         <com.larswerkman.holocolorpicker.ValueBar
             android:id="@+id/valuebar"
             android:layout_width="49dp"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_gravity="center"
             android:layout_marginBottom="8dp"
-            android:layout_marginStart="32dp"
+            android:layout_marginStart="40dp"
             android:layout_marginTop="8dp"
+            app:bar_length="300dp"
             app:bar_orientation_horizontal="false"
-            app:bar_pointer_halo_radius="25dp"
-            app:bar_pointer_radius="20dp"
-            app:bar_thickness="25dp"
+            app:bar_pointer_halo_radius="14dp"
+            app:bar_pointer_radius="6dp"
+            app:bar_thickness="4dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/saturationbar"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.4" />
+            app:layout_constraintVertical_bias="0.0" />
 
 
     </android.support.constraint.ConstraintLayout>
