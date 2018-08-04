@@ -120,11 +120,7 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
     @Override
     public void onColorChanged(int color) {
         //gives the color when it's changed.
-
-        if (Math.abs(color - lastColor) > 10 || color == 0xFFFFFFFF || color == 0xFF000000){
-            changeColor();
-            lastColor = color;
-        }
+        changeColor();
     }
 
     @Override
