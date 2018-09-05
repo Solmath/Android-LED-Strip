@@ -5,6 +5,14 @@
 #include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 
+#include <EEPROM.h>
+
+extern "C" {
+#include "user_interface.h"
+}
+
+#define DEBUG
+
 unsigned int port = 2390;
 
 char packetBuffer[255];
@@ -18,8 +26,25 @@ const int LED_BLUE = D7;
 
 // const int LED_BUILTIN_2 = D4;
 
+os_timer_t eepromTimer;
+bool timerEvent = false;
+
+typedef struct {
+  int16_t r;
+  int16_t g;
+  int16_t b;
+} color_t;
+
+void eepromTimerCallback(void *pArg)
+{
+  timerEvent = true;
+}
+
 void setup()
 {
+  char buf[100];
+  color_t oldColor;
+  
   // set pin modes
   pinMode(LED_RED, OUTPUT);
   pinMode(LED_GREEN, OUTPUT);
@@ -28,6 +53,7 @@ void setup()
   // pinMode(LED_BUILTIN, OUTPUT);
   // pinMode(LED_BUILTIN_2, OUTPUT);
 
+  // flash colors to signal init
   digitalWrite(LED_RED, HIGH);
   delay(300);
   digitalWrite(LED_RED, LOW);
@@ -38,30 +64,41 @@ void setup()
   delay(300);
   digitalWrite(LED_BLUE, LOW);
 
+  // restore last color from eeprom
+  EEPROM.begin(6);
+  EEPROM.get(0, oldColor);
+  EEPROM.end();
+
+  analogWrite(LED_RED, oldColor.r);
+  analogWrite(LED_GREEN, oldColor.g);
+  analogWrite(LED_BLUE, oldColor.b);
+  
   // begin serial and connect to WiFi
   Serial.begin(115200);
   delay(100);
 
-  Serial.println("");
+  Serial.println("----------------------------");
   Serial.println("Connecting to wifi");
-  Serial.println("");
+  Serial.println("----------------------------");
   
   WiFiManager wifiManager;
   wifiManager.autoConnect();
 
-  Serial.println("");
+  Serial.println("----------------------------");
   Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
-  Serial.println("");
+  Serial.println("----------------------------");
 
   Udp.begin(port);
+
+  os_timer_setfn(&eepromTimer, eepromTimerCallback, NULL);
 }
 
 void loop()
 {
   int packetSize = Udp.parsePacket();
   char buf[100];
+
+  static color_t newColor = {0};
   
   if(packetSize) {
     Serial.print("Received packet of size ");
@@ -85,31 +122,31 @@ void loop()
     // TEMP parse data from packet
     char * temp;
 
-    int r = 0;
-    int g = 0;
-    int b = 0;
+    newColor.r = 0;
+    newColor.g = 0;
+    newColor.b = 0;
 
     temp = strtok (packetBuffer,":");
-    r = atoi(temp);
+    newColor.r = atoi(temp);
 
     if(temp != NULL){
       temp = strtok (NULL,":");
-      g = atoi(temp);
+      newColor.g = atoi(temp);
     }
 
     if(temp != NULL){
       temp = strtok (NULL,":");
-      b = atoi(temp);
+      newColor.b = atoi(temp);
     }
 
-    sprintf(buf,"r = %4d\ng = %4d\nb = %4d",r, g, b);
+    sprintf(buf,"r = %4d\ng = %4d\nb = %4d", newColor.r, newColor.g, newColor.b);
 
     Serial.println(buf);
     Serial.println("");
 
-    analogWrite(LED_RED, r);
-    analogWrite(LED_GREEN, g);
-    analogWrite(LED_BLUE, b);
+    analogWrite(LED_RED, newColor.r);
+    analogWrite(LED_GREEN, newColor.g);
+    analogWrite(LED_BLUE, newColor.b);
 
     // debugging with onboard LEDs
     // analogWrite(LED_BUILTIN, 1023-b);
@@ -120,5 +157,23 @@ void loop()
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
     Udp.write(ReplyBuffer);
     Udp.endPacket();
+
+    os_timer_arm(&eepromTimer, 30000, false); // write eeprom 10s after last message
+  }
+
+  if (timerEvent)
+  {
+    // Update eeprom
+    #ifndef DEBUG
+    EEPROM.begin(6);
+    EEPROM.put( 0, newColor );         // don't write during debugging to reduce wear on eeprom 
+    EEPROM.end();                      // Free RAM copy of structure
+    #endif
+
+    Serial.println("----------------------------");
+    Serial.println("Value written to eeprom.");
+    Serial.println("----------------------------");
+    
+    timerEvent = false;
   }
 }

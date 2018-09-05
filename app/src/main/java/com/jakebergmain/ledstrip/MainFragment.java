@@ -72,13 +72,12 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
         picker.addSaturationBar(saturationBar);
         picker.addValueBar(valueBar);
 
-        //to turn of showing the old color
+        // turn of showing the old color
         picker.setShowOldCenterColor(false);
         picker.setOnColorChangedListener(this);
-        picker.setOnColorSelectedListener(this);
 
         if (!deviceDetectionRun) {
-            // searchForDevices();
+            searchForDevices();
             deviceDetectionRun = true;
         }
 
@@ -90,7 +89,6 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
         // Make sure to call the super method so that the states of our views are saved
         super.onSaveInstanceState(outState);
         // Save our own state now
-        // outState.putInt("hue", hueBar.getProgress());
     }
 
     // TODO: Rename method, update argument and hook method into UI event
@@ -119,13 +117,14 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
 
     @Override
     public void onColorChanged(int color) {
-        //gives the color when it's changed.
-        // changeColor();
+        // gives the color when it's actually changed (by any bar)
+        // called in setNewCenterColor()
+        changeColor();
     }
 
     @Override
     public void onColorSelected(int color){
-        // changeColor();
+        // only called at the end of a motion event on the circle --> not needed in our case
     }
 
     /**
