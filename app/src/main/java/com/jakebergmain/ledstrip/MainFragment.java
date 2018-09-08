@@ -32,8 +32,6 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
 
     ColorPicker picker;
 
-    int lastColor = 0;
-
     static boolean deviceDetectionRun = false;
 
     public MainFragment() {
