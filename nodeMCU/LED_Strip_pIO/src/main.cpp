@@ -27,8 +27,8 @@ const int LED_RED = D6;
 const int LED_GREEN = D5;
 const int LED_BLUE = D7;
 
-const int staticColor = 1;
-const int animation = 2;
+const int STATIC_COLOR = 1;
+const int ANIMATION = 2;
 
 // const int LED_BUILTIN_2 = D4;
 
@@ -180,13 +180,13 @@ void loop()
     os_timer_arm(&eepromTimer, 30000, false); // write eeprom 30s after last message
   }
 
-  if (mode == staticColor)
+  if (mode == STATIC_COLOR)
   {
     analogWrite(LED_RED, (int)(newColor.r * 1023.0));
     analogWrite(LED_GREEN, (int)(newColor.g * 1023.0));
     analogWrite(LED_BLUE, (int)(newColor.b * 1023.0));
   }
-  else if (mode == animation)
+  else if (mode == ANIMATION)
   {
     if (animationTimerEvent)
     {

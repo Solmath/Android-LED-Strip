@@ -11,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.gson.Gson;
 import com.larswerkman.holocolorpicker.ColorPicker;
 import com.larswerkman.holocolorpicker.SaturationBar;
 import com.larswerkman.holocolorpicker.ValueBar;
@@ -24,7 +25,7 @@ import com.larswerkman.holocolorpicker.ValueBar;
  * Use the {@link MainFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MainFragment extends Fragment implements ColorPicker.OnColorChangedListener, ColorPicker.OnColorSelectedListener, DiscoverTask.DiscoverCallback {
+public class MainFragment extends Fragment implements ColorPicker.OnColorChangedListener, ColorPicker.OnHueChangedListener, DiscoverTask.DiscoverCallback {
 
     final String LOG_TAG = MainFragment.class.getSimpleName();
 
@@ -73,6 +74,7 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
         // turn of showing the old color
         picker.setShowOldCenterColor(false);
         picker.setOnColorChangedListener(this);
+        picker.setOnHueChangedListener(this);
 
         if (!deviceDetectionRun) {
             searchForDevices();
@@ -117,12 +119,37 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
     public void onColorChanged(int color) {
         // gives the color when it's actually changed (by any bar)
         // called in setNewCenterColor()
-        changeColor();
+        // TODO: call when all HSV-values should be changed
+        float[] hsvColor = new float[3];
+        Color.colorToHSV(color, hsvColor);
+
+        ColorMessage msg = new ColorMessage();
+        msg.setHue(hsvColor[0]);
+        msg.setSetHue(true);
+        msg.setSaturation(hsvColor[1]);
+        msg.setSetSaturation(true);
+        msg.setBrightness(hsvColor[2]);
+        msg.setSetBrightness(true);
+
+        Gson gson = new Gson();
+        String json = gson.toJson(msg);
+        changeColor(json);
     }
 
     @Override
-    public void onColorSelected(int color){
-        // only called at the end of a motion event on the circle --> not needed in our case
+    public void onHueChanged(float hue) {
+        // gives the color when it's actually changed (by any bar)
+        // called in setNewCenterColor()
+        // TODO: call when only hue should be changed
+        ColorMessage msg = new ColorMessage();
+        msg.setHue(hue);
+        msg.setSetHue(true);
+        // msg.setMode(ColorMessage.STATIC_COLOR);
+
+        Gson gson = new Gson();
+        String json = gson.toJson(msg);
+
+        changeColor(json);
     }
 
     /**
@@ -150,14 +177,14 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
      * Gets color data from seekbars and starts ChangeColorTask
      * to send a packet and change the color of the LEDs
      */
-    public void changeColor() {
+    public void changeColor(String json) {
         int color = picker.getColor();
 
         int r = Color.red(color);
         int g = Color.green(color);
         int b = Color.blue(color);
 
-        new ChangeColorTask(getContext().getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)).execute(r, g, b);
+        new ChangeColorTask(getContext().getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)).execute(json);
     }
 
     /**

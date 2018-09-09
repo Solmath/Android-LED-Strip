@@ -13,7 +13,7 @@ import java.net.SocketTimeoutException;
 /**
  * Created by jake on 2/7/16.
  */
-public class ChangeColorTask extends AsyncTask<Integer, Void, Integer> {
+public class ChangeColorTask extends AsyncTask<String, Void, Integer> {
 
     private final static int SUCCESS = 0;
     private final static int FAILURE = 1;
@@ -34,10 +34,7 @@ public class ChangeColorTask extends AsyncTask<Integer, Void, Integer> {
         }
     }
 
-    public Integer doInBackground(Integer... params){
-        int red = params[0];
-        int green = params[1];
-        int blue = params[2];
+    public Integer doInBackground(String... params){
 
         final int PORT = 2390;
         final int RESPONSE_PORT = 55056;
@@ -47,12 +44,7 @@ public class ChangeColorTask extends AsyncTask<Integer, Void, Integer> {
         if (prefs == null)
             return FAILURE;
 
-        // scale colors from max 255 to max 1023
-        red = (int) ((red / 255.0) * 1023);
-        green = (int) ((green / 255.0) * 1023);
-        blue = (int) ((blue / 255.0) * 1023);
-
-        Log.v(LOG_TAG, "red: " + red + ", green: " + green + ", blue: " + blue);
+        Log.v(LOG_TAG, params[0]);
 
         DatagramSocket socket = null;
 
@@ -69,7 +61,7 @@ public class ChangeColorTask extends AsyncTask<Integer, Void, Integer> {
         }
 
         // packet as a string
-        String packetContents = red + ":" + green + ":" + blue;
+        String packetContents = params[0];
 
         try {
             // open a socket
