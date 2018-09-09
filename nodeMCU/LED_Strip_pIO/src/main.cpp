@@ -10,7 +10,8 @@
 #include <ArduinoJson.h>
 
 extern "C" {
-#include "user_interface.h"
+// #include "user_interface.h"
+#include "color.h"
 }
 
 #define DEBUG
@@ -18,6 +19,7 @@ extern "C" {
 unsigned int port = 2390;
 
 char ReplyBuffer[] = "acknowledged";
+char buf[100];
 
 WiFiUDP Udp;
 
@@ -25,24 +27,40 @@ const int LED_RED = D6;
 const int LED_GREEN = D5;
 const int LED_BLUE = D7;
 
+const int staticColor = 1;
+const int animation = 2;
+
 // const int LED_BUILTIN_2 = D4;
 
 os_timer_t eepromTimer;
 bool eepromTimerEvent = false;
+bool animationTimerEvent = false;
 
-typedef struct {
-  int16_t r;
-  int16_t g;
-  int16_t b;
-} color_t;
+float hue;
+bool setHue;
+float saturation;
+bool setSaturation;
+float brightness;
+bool setBrightness;
+int mode;
+
+HSV_color_t HSVcolor;
 
 void eepromTimerCallback(void *pArg)
 {
   eepromTimerEvent = true;
 }
 
-void parsePacket(char *packetBuffer, StaticJsonBuffer *jsonBuffer)
+void animationTimerCallback(void *pArg)
 {
+  animationTimerEvent = true;
+}
+
+void parsePacket()
+{
+  char packetBuffer[255];
+  StaticJsonBuffer<200> jsonBuffer;
+
   // read the packet into packetBufffer
   int len = Udp.read(packetBuffer, 255);
   if (len > 0) {
@@ -53,29 +71,26 @@ void parsePacket(char *packetBuffer, StaticJsonBuffer *jsonBuffer)
   Serial.println(packetBuffer);
   Serial.println("");
 
-  JsonObject& root = jsonBuffer->parseObject(packetBuffer);
+  JsonObject& root = jsonBuffer.parseObject(packetBuffer);
 
-  // TEMP parse data from packet
-  char * temp;
-
-  newColor.r = 0;
-  newColor.g = 0;
-  newColor.b = 0;
-
-  temp = strtok (packetBuffer,":");
-  newColor.r = atoi(temp);
-
-  if(temp != NULL){
-    temp = strtok (NULL,":");
-    newColor.g = atoi(temp);
+  setHue = root["setHue"];
+  if (setHue)
+  {
+    HSVcolor.h = root["hue"];
   }
-
-  if(temp != NULL){
-    temp = strtok (NULL,":");
-    newColor.b = atoi(temp);
+  setSaturation = root["setSaturation"];
+  if (setSaturation)
+  {
+    HSVcolor.s = root["saturation"];
   }
+  setBrightness = root["setBrightness"];
+  if (setBrightness)
+  {
+    HSVcolor.v = root["brightness"];
+  }
+  mode = root["mode"];
 
-  sprintf(buf,"r = %4d\ng = %4d\nb = %4d", newColor.r, newColor.g, newColor.b);
+  sprintf(buf,"H = %4f\nS = %4f\nV = %4f", HSVcolor.h, HSVcolor.s, HSVcolor.v);
 
   Serial.println(buf);
   Serial.println("");
@@ -83,8 +98,7 @@ void parsePacket(char *packetBuffer, StaticJsonBuffer *jsonBuffer)
 
 void setup()
 {
-  char buf[100];
-  color_t oldColor;
+  RGB_color_t lastColor;
   
   // set pin modes
   pinMode(LED_RED, OUTPUT);
@@ -107,12 +121,12 @@ void setup()
 
   // restore last color from eeprom
   EEPROM.begin(6);
-  EEPROM.get(0, oldColor);
+  EEPROM.get(0, lastColor);
   EEPROM.end();
 
-  analogWrite(LED_RED, oldColor.r);
-  analogWrite(LED_GREEN, oldColor.g);
-  analogWrite(LED_BLUE, oldColor.b);
+  analogWrite(LED_RED, lastColor.r);
+  analogWrite(LED_GREEN, lastColor.g);
+  analogWrite(LED_BLUE, lastColor.b);
   
   // begin serial and connect to WiFi
   Serial.begin(115200);
@@ -137,12 +151,7 @@ void setup()
 void loop()
 {
   int packetSize = Udp.parsePacket();
-  char buf[100];
-  char packetBuffer[255];
-
-  StaticJsonBuffer<200> jsonBuffer;
-
-  static color_t newColor = {0};
+  RGB_color_t newColor;
   
   if(packetSize) {
     
@@ -154,7 +163,9 @@ void loop()
     Serial.print(", port ");
     Serial.println(Udp.remotePort());
     
-    parsepacket(packetBuffer, *jsonBuffer);
+    parsePacket();
+
+    newColor = hsv2rgb(HSVcolor);
     
     // debugging with onboard LEDs
     // analogWrite(LED_BUILTIN, 1023-b);
@@ -171,15 +182,15 @@ void loop()
 
   if (mode == staticColor)
   {
-    analogWrite(LED_RED, newColor.r);
-    analogWrite(LED_GREEN, newColor.g);
-    analogWrite(LED_BLUE, newColor.b);
+    analogWrite(LED_RED, (int)(newColor.r * 1023.0));
+    analogWrite(LED_GREEN, (int)(newColor.g * 1023.0));
+    analogWrite(LED_BLUE, (int)(newColor.b * 1023.0));
   }
   else if (mode == animation)
   {
     if (animationTimerEvent)
     {
-      
+      animationTimerEvent = false;
     }
   }
 
@@ -196,6 +207,6 @@ void loop()
     Serial.println("Value written to eeprom.");
     Serial.println("----------------------------");
     
-    timerEvent = false;
+    eepromTimerEvent = false;
   }
 }
