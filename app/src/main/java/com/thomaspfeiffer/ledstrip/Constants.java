@@ -1,4 +1,4 @@
-package com.jakebergmain.ledstrip;
+package com.thomaspfeiffer.ledstrip;
 
 /**
  * Created by jake on 2/7/16.

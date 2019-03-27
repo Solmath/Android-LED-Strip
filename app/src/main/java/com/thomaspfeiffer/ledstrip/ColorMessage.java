@@ -1,4 +1,4 @@
-package com.jakebergmain.ledstrip;
+package com.thomaspfeiffer.ledstrip;
 
 public class ColorMessage {
     public static final int STATIC_COLOR = 1;

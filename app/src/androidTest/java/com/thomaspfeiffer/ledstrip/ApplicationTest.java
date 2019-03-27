@@ -1,4 +1,4 @@
-package com.jakebergmain.ledstrip;
+package com.thomaspfeiffer.ledstrip;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

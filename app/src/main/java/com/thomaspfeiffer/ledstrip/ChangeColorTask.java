@@ -1,4 +1,4 @@
-package com.jakebergmain.ledstrip;
+package com.thomaspfeiffer.ledstrip;
 
 import android.content.SharedPreferences;
 import android.os.AsyncTask;

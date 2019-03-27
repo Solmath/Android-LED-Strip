@@ -1,4 +1,4 @@
-package com.jakebergmain.ledstrip;
+package com.thomaspfeiffer.ledstrip;
 
 import org.junit.Test;
 

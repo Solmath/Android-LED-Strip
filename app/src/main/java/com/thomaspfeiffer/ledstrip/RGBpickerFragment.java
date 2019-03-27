@@ -1,6 +1,5 @@
-package com.jakebergmain.ledstrip;
+package com.thomaspfeiffer.ledstrip;
 
-import android.app.Fragment;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -10,6 +9,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.support.v4.app.Fragment;
 
 import com.google.gson.Gson;
 import com.larswerkman.holocolorpicker.ColorPicker;
@@ -20,22 +20,20 @@ import com.larswerkman.holocolorpicker.ValueBar;
 /**
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
- * {@link MainFragment.OnFragmentInteractionListener} interface
+ * {@link RGBpickerFragment.OnFragmentInteractionListener} interface
  * to handle interaction events.
- * Use the {@link MainFragment#newInstance} factory method to
+ * Use the {@link RGBpickerFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MainFragment extends Fragment implements ColorPicker.OnColorChangedListener, ColorPicker.OnHueChangedListener, DiscoverTask.DiscoverCallback {
+public class RGBpickerFragment extends Fragment implements ColorPicker.OnColorChangedListener, ColorPicker.OnHueChangedListener, DiscoverTask.DiscoverCallback {
 
-    final String LOG_TAG = MainFragment.class.getSimpleName();
-
-    private OnFragmentInteractionListener mListener;
+    final String LOG_TAG = RGBpickerFragment.class.getSimpleName();
 
     ColorPicker picker;
 
     static boolean deviceDetectionRun = false;
 
-    public MainFragment() {
+    public RGBpickerFragment() {
         // Required empty public constructor
     }
 
@@ -43,11 +41,11 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @return A new instance of fragment MainFragment.
+     * @return A new instance of fragment RGBpickerFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MainFragment newInstance() {
-        MainFragment fragment = new MainFragment();
+    public static RGBpickerFragment newInstance() {
+        RGBpickerFragment fragment = new RGBpickerFragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
@@ -62,7 +60,7 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View rootView = inflater.inflate(R.layout.fragment_main, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_picker_rgb, container, false);
 
         picker = rootView.findViewById(R.id.picker);
         SaturationBar saturationBar = rootView.findViewById(R.id.saturationbar);
@@ -89,30 +87,6 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
         // Make sure to call the super method so that the states of our views are saved
         super.onSaveInstanceState(outState);
         // Save our own state now
-    }
-
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
     }
 
     @Override
@@ -185,20 +159,5 @@ public class MainFragment extends Fragment implements ColorPicker.OnColorChanged
         int b = Color.blue(color);
 
         new ChangeColorTask(getContext().getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0)).execute(json);
-    }
-
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
     }
 }
