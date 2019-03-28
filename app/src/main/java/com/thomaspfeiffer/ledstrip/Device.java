@@ -29,12 +29,17 @@ public class Device {
 
     // Dummy method to create a data source
     // Tutorial: https://guides.codepath.com/android/using-the-recyclerview
-    public static ArrayList<Device> createDeviceList(int numDevices) throws UnknownHostException {
+    public static ArrayList<Device> createDeviceList(int numDevices) {
         ArrayList<Device> devices = new ArrayList<Device>();
 
         for (int i = 1; i <= numDevices; i++){
             byte[] ipAddr = new byte[]{127, 0, 0, 1};
-            devices.add(new Device(InetAddress.getByAddress(ipAddr), "Gerät " + ++lastDeviceId));
+            try {
+                devices.add(new Device(InetAddress.getByAddress(ipAddr), "Gerät " + ++lastDeviceId));
+            }
+            catch(UnknownHostException e) {
+            }
+
         }
 
         return devices;

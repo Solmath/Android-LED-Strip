@@ -6,7 +6,9 @@ import android.content.SharedPreferences;
 import android.net.DhcpInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.view.View;
 
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -15,16 +17,19 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by jake on 2/7/16.
  */
-public class DiscoverTask extends AsyncTask<Void, Void, byte[]> {
+public class DiscoverTask extends AsyncTask<Void, Void, List<Device>> {
 
     private final String LOG_TAG = DiscoverTask.class.getSimpleName();
 
     private WeakReference<Context> mContext;
     private WeakReference<DiscoverCallback> mCallback;
+    private View mView;
     
     private ProgressDialog progressDialog;
 
@@ -33,9 +38,10 @@ public class DiscoverTask extends AsyncTask<Void, Void, byte[]> {
      * @param context context
      * @param callback callback implementation so we can say if we found a device
      */
-    DiscoverTask(Context context, DiscoverCallback callback){
+    DiscoverTask(Context context, DiscoverCallback callback, View view){
         this.mContext = new WeakReference<>(context);
         this.mCallback = new WeakReference<>(callback);
+        this.mView = view;
     }
 
     public interface DiscoverCallback {
@@ -57,12 +63,20 @@ public class DiscoverTask extends AsyncTask<Void, Void, byte[]> {
         progressDialog.show();
     }
 
-    protected void onPostExecute(byte[] result){
+    protected void onPostExecute(List<Device> devices){
+        // TODO: get rid of progressDialog?
         progressDialog.dismiss();
 
-        if(result == null)
+        if(devices == null)
             return;
 
+        RecyclerView rvDevices = mView.findViewById(R.id.rvDevices);
+        // Create adapter passing in the sample user data
+        DeviceAdapter adapter = new DeviceAdapter(devices);
+        // Attach the adapter to the recyclerview to populate items
+        rvDevices.setAdapter(adapter);
+
+/*
         Context context = mContext.get();
         DiscoverCallback callback = mCallback.get();
         if (context == null || callback == null)
@@ -85,21 +99,27 @@ public class DiscoverTask extends AsyncTask<Void, Void, byte[]> {
                     .putString(Constants.PREFERENCES_IP_ADDR, null)
                     .apply();
         }
-
+*/
 
     }
 
-    protected byte[] doInBackground(Void... params){
+    protected List<Device> doInBackground(Void... params){
+        ArrayList<Device> devices = new ArrayList<Device>();
+
+        // TODO: Maybe switch to Multicast (https://www.kompf.de/java/multicast.html)
         DatagramSocket socket = null;
 
         final int PORT = 2390;
         final int RESPONSE_PORT = 55056;
 
+        // TODO: change message to discover devices
         String packetContents = "0:0:0";
 
         try {
             // open a socket
             socket = new DatagramSocket(RESPONSE_PORT);
+            socket.setSoTimeout(1000);
+
             // get broadcast address to send packet to all devices on network
             InetAddress address = getBroadcastAddress();
             // packet contents
@@ -109,37 +129,25 @@ public class DiscoverTask extends AsyncTask<Void, Void, byte[]> {
                 Log.v(LOG_TAG, "sending packet to " + address.toString());
                 DatagramPacket packet = new DatagramPacket(bytes, bytes.length, address, PORT);
                 socket.send(packet);
+                Log.v(LOG_TAG, "Discover package sent.");
 
-                // listen for a response
-                byte[] response = new byte[1024];
-                DatagramPacket responsePacket = new DatagramPacket(response, response.length);
-                socket.setSoTimeout(1000);
+                do {
+                    // listen for a response
+                    Log.v(LOG_TAG, "Listening for a response");
+                    byte[] response = new byte[1024];
+                    DatagramPacket responsePacket = new DatagramPacket(response, response.length);
+                    socket.receive(responsePacket);
 
-                String text = "";
-                int count = 0;
-                // keep listening and sending packets until the LED strip responds
-                while (!text.equals("acknowledged")) {
-                    try {
-                        Log.v(LOG_TAG, "Listening for a response");
-                        socket.receive(responsePacket);
-                        text = new String(response, 0, responsePacket.getLength());
-                        Log.v(LOG_TAG, "Received packet.  contents: " + text);
-                    } catch (SocketTimeoutException e) {
-                        Log.w(LOG_TAG, "Socket timed out");
-                        socket.send(packet);
-                    }
-                    count++;
-
-                    // nothing is responding so we throw and connection exception
-                    if (count > 30) {
-                        throw new ConnectException("Cannot find and connect to any LED strips.");
-                    }
-                }
-
+                    InetAddress ipAddr = responsePacket.getAddress();
+                    // keep listening and sending packets until the LED strip responds
+                    // TODO: create device from response and add it to devices (check for duplicates)
+                    devices.add(new Device(ipAddr, "Testdevice"));
+                } while (true);
                 // found a LED strip get the ip address of it and return it
-                InetAddress ipAddr = responsePacket.getAddress();
-                return ipAddr.getAddress();
+
             }
+        } catch (SocketTimeoutException e) {
+            Log.w(LOG_TAG, "Socket timed out");
         } catch (Exception e) {
             Log.e(LOG_TAG, "Error in DiscoverTask doInBackground()");
             e.printStackTrace();
@@ -149,7 +157,7 @@ public class DiscoverTask extends AsyncTask<Void, Void, byte[]> {
             }
         }
 
-        return null;
+        return devices;
     }
 
 

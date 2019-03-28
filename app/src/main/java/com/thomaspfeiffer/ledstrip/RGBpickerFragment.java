@@ -25,13 +25,12 @@ import com.larswerkman.holocolorpicker.ValueBar;
  * Use the {@link RGBpickerFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class RGBpickerFragment extends Fragment implements ColorPicker.OnColorChangedListener, ColorPicker.OnHueChangedListener, DiscoverTask.DiscoverCallback {
+public class RGBpickerFragment extends Fragment implements ColorPicker.OnColorChangedListener, ColorPicker.OnHueChangedListener {
 
     final String LOG_TAG = RGBpickerFragment.class.getSimpleName();
 
     ColorPicker picker;
 
-    static boolean deviceDetectionRun = false;
 
     public RGBpickerFragment() {
         // Required empty public constructor
@@ -73,11 +72,6 @@ public class RGBpickerFragment extends Fragment implements ColorPicker.OnColorCh
         picker.setShowOldCenterColor(false);
         picker.setOnColorChangedListener(this);
         picker.setOnHueChangedListener(this);
-
-        if (!deviceDetectionRun) {
-            searchForDevices();
-            deviceDetectionRun = true;
-        }
 
         return rootView;
     }
@@ -124,27 +118,6 @@ public class RGBpickerFragment extends Fragment implements ColorPicker.OnColorCh
         String json = gson.toJson(msg);
 
         changeColor(json);
-    }
-
-    /**
-     * method for Discover task callback
-     */
-    public void onFoundDevice() {
-        // we found a LED strip!
-        // what do we do now?
-
-        // for debug only
-        SharedPreferences preferences = getContext().getSharedPreferences(Constants.SHARED_PREFERENCES_NAME, 0);
-        String ipString = preferences.getString(Constants.PREFERENCES_IP_ADDR, "");
-        Log.v(LOG_TAG, "onDeviceFound() ipAddr: " + ipString);
-    }
-
-    /**
-     * Start DiscoverTask to search for devices on local network.
-     */
-    public void searchForDevices() {
-        Log.v(LOG_TAG, "starting DiscoverTask");
-        new DiscoverTask(getContext(), this).execute(null, null);
     }
 
     /**
