@@ -1,25 +1,23 @@
 #include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library
-#include <WiFiUdp.h>
 
+#include <WiFiUdp.h>
 #include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
 #include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
 
 #include <EEPROM.h>
 
-#include <ArduinoJson.h>
+#include "udp_interface.h"
+#include "json_parser.h"
+#include "timers.h"
 
 extern "C" {
+#include "global.h"
 // #include "user_interface.h"
 #include "color.h"
 }
 
-#define DEBUG
-
 unsigned int port = 2390;
-
-char ReplyBuffer[] = "acknowledged";
-char buf[100];
 
 WiFiUDP Udp;
 
@@ -32,72 +30,11 @@ const int ANIMATION = 2;
 
 // const int LED_BUILTIN_2 = D4;
 
-os_timer_t eepromTimer;
-bool eepromTimerEvent = false;
-bool animationTimerEvent = false;
-
-float hue;
-bool setHue;
-float saturation;
-bool setSaturation;
-float brightness;
-bool setBrightness;
-int mode;
-
-HSV_color_t HSVcolor;
-
-void eepromTimerCallback(void *pArg)
-{
-  eepromTimerEvent = true;
-}
-
-void animationTimerCallback(void *pArg)
-{
-  animationTimerEvent = true;
-}
-
-void parsePacket()
-{
-  char packetBuffer[255];
-  StaticJsonBuffer<200> jsonBuffer;
-
-  // read the packet into packetBufffer
-  int len = Udp.read(packetBuffer, 255);
-  if (len > 0) {
-    packetBuffer[len] = 0;
-  }
-  
-  Serial.println("Contents:");
-  Serial.println(packetBuffer);
-  Serial.println("");
-
-  JsonObject& root = jsonBuffer.parseObject(packetBuffer);
-
-  setHue = root["setHue"];
-  if (setHue)
-  {
-    HSVcolor.h = root["hue"];
-  }
-  setSaturation = root["setSaturation"];
-  if (setSaturation)
-  {
-    HSVcolor.s = root["saturation"];
-  }
-  setBrightness = root["setBrightness"];
-  if (setBrightness)
-  {
-    HSVcolor.v = root["brightness"];
-  }
-  mode = root["mode"];
-
-  sprintf(buf,"H = %4f\nS = %4f\nV = %4f", HSVcolor.h, HSVcolor.s, HSVcolor.v);
-
-  Serial.println(buf);
-  Serial.println("");
-}
-
 void setup()
 {
+  // TODO: DNS-Server, damit Seite zur Wifi-Auswahl über URL erreichbar ist
+  // TODO: FOTA
+  // TODO: erweitertes JSON-Objekt analog zu WLED (evtl. als eigene Klasse)
   RGB_color_t lastColor;
   
   // set pin modes
@@ -145,41 +82,18 @@ void setup()
 
   Udp.begin(port);
 
-  os_timer_setfn(&eepromTimer, eepromTimerCallback, NULL);
+  setupEepromTimer();
 }
 
 void loop()
 {
-  int packetSize = Udp.parsePacket();
+  char packetBuffer[UDP_LEN];
+  handleUdpPacket(&Udp, packetBuffer);
+
+  int mode;
   RGB_color_t newColor;
+  parseJsonPacket(packetBuffer, &mode, &newColor);
   
-  if(packetSize) {
-    
-    Serial.print("Received packet of size ");
-    Serial.println(packetSize);
-    Serial.print("From ");
-    IPAddress remoteIp = Udp.remoteIP();
-    Serial.print(remoteIp);
-    Serial.print(", port ");
-    Serial.println(Udp.remotePort());
-    
-    parsePacket();
-
-    newColor = hsv2rgb(HSVcolor);
-    
-    // debugging with onboard LEDs
-    // analogWrite(LED_BUILTIN, 1023-b);
-    // analogWrite(LED_BUILTIN_2, 1023-g);
-
-    // send a reply, to the IP address and port
-    // that sent us the packet we received
-    Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-    Udp.write(ReplyBuffer);
-    Udp.endPacket();
-
-    os_timer_arm(&eepromTimer, 30000, false); // write eeprom 30s after last message
-  }
-
   if (mode == STATIC_COLOR)
   {
     analogWrite(LED_RED, (int)(newColor.r * 1023.0));
@@ -188,13 +102,15 @@ void loop()
   }
   else if (mode == ANIMATION)
   {
+    /*
     if (animationTimerEvent)
     {
       animationTimerEvent = false;
     }
+    */
   }
 
-  if (eepromTimerEvent)
+  if (getEepromTimerEvent())
   {
     // Update eeprom
     #ifndef DEBUG
@@ -207,6 +123,6 @@ void loop()
     Serial.println("Value written to eeprom.");
     Serial.println("----------------------------");
     
-    eepromTimerEvent = false;
+    resetEepromTimerEvent();
   }
 }
