@@ -1,15 +1,18 @@
 #include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library
 
-#include <WiFiUdp.h>
 #include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
 #include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
 #include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+
+#include <WiFiUdp.h>
+#include <ESP8266SSDP.h>
 
 #include <EEPROM.h>
 
 #include "udpInterface.h"
 #include "jsonParser.h"
 #include "timers.h"
+#include "ota.h"
 
 extern "C" {
 #include "global.h"
@@ -20,6 +23,7 @@ extern "C" {
 unsigned int port = 2390;
 
 WiFiUDP Udp;
+ESP8266WebServer HTTP(80);
 
 const int LED_RED = D6;
 const int LED_GREEN = D5;
@@ -80,6 +84,31 @@ void setup()
   Serial.println("WiFi connected");
   Serial.println("----------------------------");
 
+  initOTA();
+  
+  Serial.printf("Starting HTTP...\n");
+  HTTP.on("/index.html", HTTP_GET, []() {
+    HTTP.send(200, "text/plain", "Hello World!");
+  });
+  HTTP.on("/description.xml", HTTP_GET, []() {
+    SSDP.schema(HTTP.client());
+  });
+  HTTP.begin();
+
+  Serial.printf("Starting SSDP...\n");
+
+  SSDP.setSchemaURL("description.xml");
+  SSDP.setHTTPPort(80);
+  SSDP.setName("Philips hue clone");
+  SSDP.setSerialNumber("001788102201");
+  SSDP.setURL("index.html");
+  SSDP.setModelName("Philips hue bridge 2012");
+  SSDP.setModelNumber("929000226503");
+  SSDP.setModelURL("http://www.meethue.com");
+  SSDP.setManufacturer("Royal Philips Electronics");
+  SSDP.setManufacturerURL("http://www.philips.com");
+  SSDP.begin();
+
   Udp.begin(port);
 
   setupEepromTimer();
@@ -87,6 +116,8 @@ void setup()
 
 void loop()
 {
+  handleOTA();
+
   char packetBuffer[UDP_LEN];
   handleUdpPacket(&Udp, packetBuffer);
 
@@ -125,4 +156,5 @@ void loop()
     
     resetEepromTimerEvent();
   }
+
 }
