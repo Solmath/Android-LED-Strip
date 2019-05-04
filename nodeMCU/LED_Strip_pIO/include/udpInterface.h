@@ -6,6 +6,6 @@
 
 #define UDP_LEN 255
 
-void handleUdpPacket(WiFiUDP *Udp, char *packetBuffer);
+void handleUdpPacket(WiFiUDP *Udp, int packetSize, char *packetBuffer);
 
 #endif /* UDPINTERFACE_H */

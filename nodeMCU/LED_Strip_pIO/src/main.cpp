@@ -118,13 +118,16 @@ void loop()
 {
   handleOTA();
 
-  char packetBuffer[UDP_LEN];
-  handleUdpPacket(&Udp, packetBuffer);
-
   int mode;
   RGB_color_t newColor;
-  parseJsonPacket(packetBuffer, &mode, &newColor);
+  int packetSize = Udp.parsePacket();
   
+  if(packetSize) {
+    char packetBuffer[UDP_LEN];
+    handleUdpPacket(&Udp, packetSize, packetBuffer);
+    parseJsonPacket(packetBuffer, &mode, &newColor);
+  }
+
   if (mode == STATIC_COLOR)
   {
     analogWrite(LED_RED, (int)(newColor.r * 1023.0));
@@ -143,6 +146,7 @@ void loop()
 
   if (getEepromTimerEvent())
   {
+    // TODO: Maybe use SPIFFS (see diyHue)
     // Update eeprom
     #ifndef DEBUG
     EEPROM.begin(6);

@@ -12,7 +12,6 @@ void parseJsonPacket(char *packetBuffer, int *mode, RGB_color_t *newColor)
         Serial.println(error.c_str());
         return;
     }
-    // JsonObject root = jsonDoc.to<JsonObject>();
 
     HSV_color_t HSVcolor;
 
