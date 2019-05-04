@@ -7,8 +7,8 @@
 
 #include <EEPROM.h>
 
-#include "udp_interface.h"
-#include "json_parser.h"
+#include "udpInterface.h"
+#include "jsonParser.h"
 #include "timers.h"
 
 extern "C" {
