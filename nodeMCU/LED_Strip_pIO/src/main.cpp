@@ -1,11 +1,9 @@
 #include <ESP8266WiFi.h>          //ESP8266 Core WiFi Library
-
-#include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
-#include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
-#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
-
-#include <WiFiUdp.h>
 #include <ESP8266SSDP.h>
+#include <ESP8266WebServer.h>     //Local WebServer used to serve the configuration portal
+#include <DNSServer.h>            //Local DNS Server used for redirecting all requests to the configuration portal
+#include <WiFiManager.h>          //https://github.com/tzapu/WiFiManager WiFi Configuration Magic
+#include <WiFiUdp.h>
 
 #include <EEPROM.h>
 
@@ -87,26 +85,41 @@ void setup()
   initOTA();
   
   Serial.printf("Starting HTTP...\n");
-  HTTP.on("/index.html", HTTP_GET, []() {
-    HTTP.send(200, "text/plain", "Hello World!");
-  });
+
   HTTP.on("/description.xml", HTTP_GET, []() {
+    Serial.printf("geting description!\n");
+
     SSDP.schema(HTTP.client());
+  });
+  HTTP.on("/reset", HTTP_GET, []() {
+    Serial.printf("making reset!\n");
+
+    HTTP.send(200, "text/plain", "Ok");
+
+    ESP.restart();
+  });
+  HTTP.onNotFound([]() {
+    Serial.printf("not found: ");
+    Serial.printf(HTTP.uri().c_str());
+    Serial.printf("\n");
   });
   HTTP.begin();
 
   Serial.printf("Starting SSDP...\n");
 
+  SSDP.setName("SSDP Test");
+  //SSDP.setDeviceType("urn:schemas-upnp-org:device:BinaryLight:1");
+  SSDP.setDeviceType("upnp:rootdevice");
   SSDP.setSchemaURL("description.xml");
-  SSDP.setHTTPPort(80);
-  SSDP.setName("Philips hue clone");
-  SSDP.setSerialNumber("001788102201");
-  SSDP.setURL("index.html");
-  SSDP.setModelName("Philips hue bridge 2012");
-  SSDP.setModelNumber("929000226503");
-  SSDP.setModelURL("http://www.meethue.com");
-  SSDP.setManufacturer("Royal Philips Electronics");
-  SSDP.setManufacturerURL("http://www.philips.com");
+  SSDP.setSerialNumber(ESP.getChipId());
+  SSDP.setURL("/");
+  SSDP.setModelName("ESP8266 Home Control");
+  SSDP.setModelNumber("ESP8266");
+  SSDP.setManufacturer("Home Control");
+
+  // SSDP.setModelURL("http://www.meethue.com");
+  // SSDP.setManufacturer("Royal Philips Electronics");
+  // SSDP.setManufacturerURL("http://www.philips.com");
   SSDP.begin();
 
   Udp.begin(port);
@@ -117,6 +130,7 @@ void setup()
 void loop()
 {
   handleOTA();
+  HTTP.handleClient();
 
   int mode;
   RGB_color_t newColor;
@@ -160,5 +174,4 @@ void loop()
     
     resetEepromTimerEvent();
   }
-
 }
